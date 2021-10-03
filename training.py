@@ -27,7 +27,7 @@ ax1 = plt.axes(projection='3d')
 
 for i_episode in range(10000000):
     env = Env(4, 4)
-    print("episode = %d", i_episode)
+    print("episode = {}".format(i_episode))
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -132,7 +132,7 @@ for i_episode in range(10000000):
     send = np.concatenate((state, state_2), axis=0)
     # print(send)
 
-    while done_all == True:
+    while not done_all:
         total_steps += 1
         # data = [0, 0, 1,1,1,1]
         state = np.array(situation_information, dtype=np.float32)
