@@ -85,7 +85,7 @@ class Env():
         # universal parameters
         self.d = 1
         self.j = 0
-        self.MAX_STEPS = 60
+        self.MAX_STEPS = 200
         self.done = False
 
         self.title = 'normal'
@@ -414,7 +414,9 @@ class Env():
             self.done = True
             self.title = self.title_1 + self.title_2+ self.title_3+ self.title_4 + 'winner'
             self.reward_global = 500
-        return r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2,r_position_next_3, b_position_next_3,r_position_next_4, b_position_next_4, state__1_next, state__2_next,state__3_next,state__4_next, self.reward_global, self.flag_1,self.flag_2,self.flag_3,self.flag_4,self.done, self.title
+        rewards = [reward_1, reward_2, reward_3, reward_4]
+        rewards = [r + self.reward_global/4.0 for r in rewards]
+        return r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2,r_position_next_3, b_position_next_3,r_position_next_4, b_position_next_4, state__1_next, state__2_next,state__3_next,state__4_next, rewards, self.flag_1,self.flag_2,self.flag_3,self.flag_4,self.done, self.title
 
     def action(self, choose_1, choose_2, choose_3, choose_4):
         if choose_1 == 0:

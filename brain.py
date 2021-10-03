@@ -10,13 +10,13 @@ class DeepQNetwork:
             self,
             n_actions,
             n_features,
-            learning_rate=0.01,
-            reward_decay=0.9,
+            learning_rate=0.0001,
+            reward_decay=0.99,
             e_greedy=0.9,
             replace_target_iter=300,
-            memory_size=500,
-            batch_size=32,
-            e_greedy_increment=None,
+            memory_size=1e5,
+            batch_size=128,
+            e_greedy_decrement=1e-4,
             output_graph=False,
 
 
@@ -25,12 +25,13 @@ class DeepQNetwork:
         self.n_features = n_features
         self.lr = learning_rate
         self.gamma = reward_decay
-        self.epsilon_max = e_greedy
         self.replace_target_iter = replace_target_iter
         self.memory_size = memory_size
         self.batch_size = batch_size
-        self.epsilon_increment = e_greedy_increment
-        self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+
+        self.epsilon_decrement = e_greedy_decrement
+        self.epsilon = e_greedy
+        self.epsilon_min = 1e-2
 
         # total learning step
         self.learn_step_counter = 0
@@ -117,14 +118,13 @@ class DeepQNetwork:
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
         if np.random.uniform() < self.epsilon:
+            action = np.random.randint(0, self.n_actions)
+        else:
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
             #print(actions_value)
             action = np.argmax(actions_value)
             #print("***",action,"***")
-        else:
-            action = np.random.randint(0, self.n_actions)
-            #print("&&&",action,"&&&")
         return action
 
     def learn(self):
@@ -185,7 +185,7 @@ class DeepQNetwork:
         self.cost_his.append(self.cost)
 
         # increasing epsilon
-        self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
+        self.epsilon = max(self.epsilon - self.epsilon_decrement, self.epsilon_min)
         self.learn_step_counter += 1
 
     def plot_cost(self):

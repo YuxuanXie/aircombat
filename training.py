@@ -17,16 +17,16 @@ g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
                   n_features=32,
-                  learning_rate=0.01, e_greedy=1,
-                  replace_target_iter=100, memory_size=2000,
-                  e_greedy_increment=None,)
+                  learning_rate=1e-4, e_greedy=0.9,
+                  replace_target_iter=200, memory_size=1e4,
+                  e_greedy_increment=1e-3,)
     # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 steps = 0
 title = ''
 
-for i_episode in range(10000000):
+for i_episode in range(1e7):
     env = Env(4, 4)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
@@ -131,7 +131,7 @@ for i_episode in range(10000000):
     state_2 = np.array(situation_information_2,dtype=np.float32)
     send = np.concatenate((state, state_2), axis=0)
     # print(send)
-    print("episode = {}, total steps = {}, previous episode steps = {}, title = {}".format(i_episode, total_steps, steps, title))
+    print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, title))
     total_steps += steps
     steps = 0
     title = ''
@@ -164,7 +164,7 @@ for i_episode in range(10000000):
                 r_action_number_4 = RL.choose_action(state_4)
             else:
                 r_action_number_4 = 9
-        r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, reward_global, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
+        r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
         # next_state = np.array(situation_information_next)
         # next_state_2 = np.array(situation_information_next_2)
         # rewardnp[0]= reward_global
@@ -177,10 +177,10 @@ for i_episode in range(10000000):
         actionlist2.append(action_2)
         actionlist3.append(r_action_number_3)
         actionlist4.append(r_action_number_4)
-        total_reward1.append(reward_global / 4)
-        total_reward2.append(reward_global / 4)
-        total_reward3.append(reward_global / 4)
-        total_reward4.append(reward_global / 4)
+        total_reward1.append(rewards[0])
+        total_reward2.append(rewards[1])
+        total_reward3.append(rewards[2])
+        total_reward4.append(rewards[3])
 
         X.append(r_position_next[0])
         Y.append(r_position_next[1])
@@ -208,20 +208,20 @@ for i_episode in range(10000000):
         Z_B_4.append(b_position_next_4[2])
 
         with g1.as_default():
-            RL.store_transition(situation_information, action, reward_global/4, situation_information_next)
-            RL.store_transition(situation_information_2, action_2, reward_global/4, situation_information_next_2)
-            RL.store_transition(situation_information_3, r_action_number_3, reward_global/4, situation_information_next_3)
-            RL.store_transition(situation_information_4, r_action_number_4, reward_global/4, situation_information_next_4)
+            RL.store_transition(situation_information, action, rewards[0], situation_information_next)
+            RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2)
+            RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3)
+            RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4)
 
         situation_information = situation_information_next
         situation_information_2 = situation_information_next_2
         situation_information_3 = situation_information_next_3
         situation_information_4 = situation_information_next_4
 
-        ep_r += reward_global / 4
-        ep_r_2 += reward_global / 4
-        ep_r_3 += reward_global / 4
-        ep_r_4 += reward_global / 4
+        ep_r += rewards[0]
+        ep_r_2 += rewards[1]
+        ep_r_3 += rewards[2]
+        ep_r_4 += rewards[3]
 
         if total_steps > 1000:
             with g1.as_default():
