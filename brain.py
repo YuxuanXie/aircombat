@@ -18,8 +18,6 @@ class DeepQNetwork:
             batch_size=128,
             e_greedy_decrement=1e-4,
             output_graph=False,
-
-
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -37,7 +35,7 @@ class DeepQNetwork:
         self.learn_step_counter = 0
 
         # initialize zero memory [s, a, r, s_]
-        self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
+        self.memory = np.zeros((int(self.memory_size), n_features * 2 + 2))
 
         # consist of [target_net, evaluate_net]
         self._build_net()
@@ -109,7 +107,7 @@ class DeepQNetwork:
         transition = np.hstack((s, [a, r], s_))
 
         # replace the old memory with new memory
-        index = self.memory_counter % self.memory_size
+        index = self.memory_counter % int(self.memory_size)
         self.memory[index, :] = transition
 
         self.memory_counter += 1
