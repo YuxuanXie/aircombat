@@ -27,7 +27,7 @@ ax1 = plt.axes(projection='3d')
 
 for i_episode in range(10000000):
     env = Env(4, 4)
-    done_all = False
+    print("episode = %d", i_episode)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -130,9 +130,10 @@ for i_episode in range(10000000):
     state = np.array(situation_information,dtype=np.float32)
     state_2 = np.array(situation_information_2,dtype=np.float32)
     send = np.concatenate((state, state_2), axis=0)
-    print(send)
+    # print(send)
 
     while done_all == True:
+        total_steps += 1
         # data = [0, 0, 1,1,1,1]
         state = np.array(situation_information, dtype=np.float32)
         state_2 = np.array(situation_information_2, dtype=np.float32)
@@ -162,11 +163,11 @@ for i_episode in range(10000000):
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, reward_global, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
         next_state = np.array(situation_information_next)
         next_state_2 = np.array(situation_information_next_2)
-        rewardnp[0]= reward_global
-        donenp[0]= done_all
-        send = np.concatenate((next_state,next_state_2, rewardnp, donenp), axis=0)
-        send = np.array(send, dtype=np.float32)
-        print(send)
+        # rewardnp[0]= reward_global
+        # donenp[0]= done_all
+        # send = np.concatenate((next_state,next_state_2, rewardnp, donenp), axis=0)
+        # send = np.array(send, dtype=np.float32)
+        # print(send)
 
         actionlist1.append(action)
         actionlist2.append(action_2)

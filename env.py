@@ -373,7 +373,7 @@ class Env():
 
         self.j += 1
         self.dangeous_module_2(r_position_next_1,r_position_next_2,r_position_next_3,r_position_next_4)
-        self.reward_global = reward_1 + reward_2 + reward_3 + reward_4
+        self.reward_global = 0 # reward_1 + reward_2 + reward_3 + reward_4
 
         if self.title_1 =="1crash2" or self.title_1 == "1crash3" or self.title_1 == "1crash4" or self.title_2 == "2crash3" or self.title_2 == "2crash4" or self.title_3 == "3crash4":
             self.done = True
