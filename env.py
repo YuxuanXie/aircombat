@@ -252,7 +252,7 @@ class Env():
                                          gamma_b_3, pusin_b_3)
         taishi4to4 = self.onetaishilist1(x_r_4, y_r_4, z_r_4, v_r_4, gamma_r_4, pusin_r_4, x_b_4, y_b_4, z_b_4, v_b_4,
                                          gamma_b_4, pusin_b_4)
-        taishi4s = [taishi4to1 + taishi4to2 + taishi4to3 + taishi4to4]
+        taishi4s = [taishi4to1, taishi4to2, taishi4to3, taishi4to4]
         taishi4 = taishi4s[self.target_for_agents[3]] * 4
 
         return taishi1, taishi2, taishi3, taishi4,
