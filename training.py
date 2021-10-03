@@ -23,11 +23,11 @@ with g1.as_default():
     # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
-
+steps = 0
+title = ''
 
 for i_episode in range(10000000):
     env = Env(4, 4)
-    print("episode = {}".format(i_episode))
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -131,9 +131,13 @@ for i_episode in range(10000000):
     state_2 = np.array(situation_information_2,dtype=np.float32)
     send = np.concatenate((state, state_2), axis=0)
     # print(send)
+    print("episode = {}, total steps = {}, previous episode steps = {}, title = {}".format(i_episode, total_steps, steps, title))
+    total_steps += steps
+    steps = 0
+    title = ''
 
     while not done_all:
-        total_steps += 1
+        steps += 1
         # data = [0, 0, 1,1,1,1]
         state = np.array(situation_information, dtype=np.float32)
         state_2 = np.array(situation_information_2, dtype=np.float32)
@@ -147,7 +151,7 @@ for i_episode in range(10000000):
                 action = 9
         with g1.as_default():
             if done_2 == 0:
-                action = RL.choose_action(state_2)
+                action_2 = RL.choose_action(state_2)
             else:
                 action_2 = 9
         with g1.as_default():
@@ -161,8 +165,8 @@ for i_episode in range(10000000):
             else:
                 r_action_number_4 = 9
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, reward_global, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
-        next_state = np.array(situation_information_next)
-        next_state_2 = np.array(situation_information_next_2)
+        # next_state = np.array(situation_information_next)
+        # next_state_2 = np.array(situation_information_next_2)
         # rewardnp[0]= reward_global
         # donenp[0]= done_all
         # send = np.concatenate((next_state,next_state_2, rewardnp, donenp), axis=0)
@@ -204,8 +208,8 @@ for i_episode in range(10000000):
         Z_B_4.append(b_position_next_4[2])
 
         with g1.as_default():
-            RL.store_transition(situation_information,r_action_number,reward_global/4,situation_information_next)
-            RL.store_transition(situation_information_2, r_action_number_2, reward_global/4, situation_information_next_2)
+            RL.store_transition(situation_information, action, reward_global/4, situation_information_next)
+            RL.store_transition(situation_information_2, action_2, reward_global/4, situation_information_next_2)
             RL.store_transition(situation_information_3, r_action_number_3, reward_global/4, situation_information_next_3)
             RL.store_transition(situation_information_4, r_action_number_4, reward_global/4, situation_information_next_4)
 
