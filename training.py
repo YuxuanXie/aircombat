@@ -13,18 +13,19 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
 
+writer = tf.summary.FileWriter('./tblog')
+
 g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
                   n_features=32,
-                  learning_rate=1e-4, e_greedy=0.9,
-                  replace_target_iter=200, memory_size=1e4,
-                  e_greedy_decrement=1e-3)
+                  learning_rate=1e-3, e_greedy=0.99,
+                  replace_target_iter=600, memory_size=int(1e5),
+                  e_greedy_decrement=1e-5,
+                  batch_size=512)
     # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
-steps = 0
-title = ''
 
 for i_episode in range(int(1e7)):
     env = Env(4, 4)
@@ -131,10 +132,9 @@ for i_episode in range(int(1e7)):
     state_2 = np.array(situation_information_2,dtype=np.float32)
     send = np.concatenate((state, state_2), axis=0)
     # print(send)
-    print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, title))
-    total_steps += steps
     steps = 0
     title = ''
+    loss = 0
 
     while not done_all:
         steps += 1
@@ -165,13 +165,6 @@ for i_episode in range(int(1e7)):
             else:
                 r_action_number_4 = 9
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
-        # next_state = np.array(situation_information_next)
-        # next_state_2 = np.array(situation_information_next_2)
-        # rewardnp[0]= reward_global
-        # donenp[0]= done_all
-        # send = np.concatenate((next_state,next_state_2, rewardnp, donenp), axis=0)
-        # send = np.array(send, dtype=np.float32)
-        # print(send)
 
         actionlist1.append(action)
         actionlist2.append(action_2)
@@ -225,9 +218,20 @@ for i_episode in range(int(1e7)):
 
         if total_steps > 1000:
             with g1.as_default():
-                RL.learn()
+                loss = RL.learn()
 
         if done_all:
+            total_steps += steps
+            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="episode", simple_value=i_episode)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_1", simple_value=ep_r)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_2", simple_value=ep_r_2)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_3", simple_value=ep_r_3)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_4", simple_value=ep_r_4)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="loss", simple_value=loss)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="RL.epsilon", simple_value=loss)]), global_step=total_steps) 
+
+            writer.flush()
             if i_episode % 1000 ==0 and i_episode!=0:
                 print("model saved")
                 with g1.as_default():

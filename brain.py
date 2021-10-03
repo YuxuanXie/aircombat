@@ -1,6 +1,4 @@
-
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 
 
@@ -14,7 +12,7 @@ class DeepQNetwork:
             reward_decay=0.99,
             e_greedy=0.9,
             replace_target_iter=300,
-            memory_size=1e5,
+            memory_size=int(1e5),
             batch_size=128,
             e_greedy_decrement=1e-4,
             output_graph=False,
@@ -78,6 +76,7 @@ class DeepQNetwork:
 
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval))
+
         with tf.variable_scope('train'):
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
@@ -185,6 +184,7 @@ class DeepQNetwork:
         # increasing epsilon
         self.epsilon = max(self.epsilon - self.epsilon_decrement, self.epsilon_min)
         self.learn_step_counter += 1
+        return self.cost
 
     def plot_cost(self):
         import matplotlib.pyplot as plt
