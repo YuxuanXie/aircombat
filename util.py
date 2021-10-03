@@ -32,4 +32,8 @@ def assign_target(pos, target_pos, threaten, value):
         target_for_agents[best_agent] = target
         
     return target_for_agents
+
+
+
+
     

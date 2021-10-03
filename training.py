@@ -20,22 +20,14 @@ with g1.as_default():
                   learning_rate=0.01, e_greedy=1,
                   replace_target_iter=100, memory_size=2000,
                   e_greedy_increment=None,)
-    RL.addw_b_test()
+    # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 
-def htonf32(f):
-    s = struct.pack('f',f)
-    return struct.unpack('!I',s)[0]
-def f32toh(v):
-    s = struct.pack('!I',v)
-    return struct.unpack('f',s)[0]
-
-env = Env(4, 4)
 
 for i_episode in range(10000000):
+    env = Env(4, 4)
     done_all = False
-
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -210,6 +202,12 @@ for i_episode in range(10000000):
         Y_B_4.append((b_position_next_4[1]))
         Z_B_4.append(b_position_next_4[2])
 
+        with g1.as_default():
+            RL.store_transition(situation_information,r_action_number,reward_global/4,situation_information_next)
+            RL.store_transition(situation_information_2, r_action_number_2, reward_global/4, situation_information_next_2)
+            RL.store_transition(situation_information_3, r_action_number_3, reward_global/4, situation_information_next_3)
+            RL.store_transition(situation_information_4, r_action_number_4, reward_global/4, situation_information_next_4)
+
         situation_information = situation_information_next
         situation_information_2 = situation_information_next_2
         situation_information_3 = situation_information_next_3
@@ -220,98 +218,107 @@ for i_episode in range(10000000):
         ep_r_3 += reward_global / 4
         ep_r_4 += reward_global / 4
 
+        if total_steps > 1000:
+            with g1.as_default():
+                RL.learn()
+
         if done_all:
-            print('**************** check point *****************')
-            print(b_position)
-            print(b_position_2)
-            print(b_position_3)
-            print(b_position_4)
-            print('******')
-            print(i_episode)
-            print(ep_r)
-            print(X)
-            print(Y)
-            print(Z)
-            print(actionlist1)
-            print(total_reward1)
-            print("******")
-            print(ep_r_2)
-            print(X_2)
-            print(Y_2)
-            print(Z_2)
-            print(actionlist2)
-            print(total_reward2)
-            print("****")
-            print(ep_r_3)
-            print(X_3)
-            print(Y_3)
-            print(Z_3)
-            print(actionlist3)
-            print(total_reward3)
-            print("****")
-            print(ep_r_4)
-            print(X_4)
-            print(X_4)
-            print(X_4)
-            print(actionlist4)
-            print(total_reward4)
-            print("******")
-            print(X_B)
-            print(Y_B)
-            print(Z_B)
-            # trajectorysave(X,Y,Z,i_episode,title)
-            # trajectorysave(X_B, Y_B, Z_B, i_episode, "bluetra")
-            # painter = Painter(X, Y, Z, X_B, Y_B, Z_B)
-            # painter.plotfigure(i_episode)
-            # painter.plotfigure(i_episode,title,ep_r)
-            print("over")
-            print(title)
-            ax1.set_xlim(-100, 100)
-            ax1.set_ylim(-100, 100)
-            ax1.set_zlim(0, 50)
-            # x0 = np.arange(9, 11, 0.1)
-            # y0= np.arange(9,11,0.1)
-            # ??????
-            # x1 , y1 = np.meshgrid(x0, y0)
-            # ??Z????
-            # z1 = x1*y1*0+20
-            # ax1.plot_surface(x1, y1, z1, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
-            # ax1.scatter3D(X, Y, Z, c='r')
-            # u =np.linspace(0,2*np.pi,1000)
-            # v =np.linspace(0,2*np.pi,1000)
-            # x = b_position_next[0] + 20 * np.outer(np.cos(u), np.sin(v))
-            # y = b_position_next[1] + 20 * np.outer(np.sin(u), np.sin(v))
-            # z = b_position_next[2] + 20 * np.outer(np.ones(np.size(u)), np.cos(v))
-            # ax1.plot_surface(x, y, z, cmap=plt.get_cmap('rainbow'))
-            ax1.plot3D(X, Y, Z, 'red')
-            ax1.plot3D(X_2, Y_2, Z_2, 'red')
-            ax1.plot3D(X_3, Y_3, Z_3, 'red')
-            ax1.plot3D(X_4, Y_4, Z_4, 'red')
-            ax1.plot3D(X_B, Y_B, Z_B, 'blue')
-            ax1.plot3D(X_B_2, Y_B_2, Z_B_2, 'blue')
-            ax1.plot3D(X_B_3, Y_B_3, Z_B_3, 'blue')
-            ax1.plot3D(X_B_4, Y_B_4, Z_B_4, 'blue')
-            ax1.scatter3D(X_B, Y_B, Z_B, c='b')
-            ax1.scatter3D(X_B_2, Y_B_2, Z_B_2, c='b')
-            ax1.scatter3D(X_B_3, Y_B_3, Z_B_3, c='b')
-            ax1.scatter3D(X_B_4, Y_B_4, Z_B_4, c='b')
-            plt.savefig(
-                "{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_',
-                                                ep_r_4), dpi=300)
-            # plt.savefig("{}{}{:.2f}{:.2f}{}{}{}{}{}{}.png".format(i_episode, title, ep_r,ep_r_2, '**', X_B[0], '_', Y_B[0], '_', Z_B[0]), dpi=300)
-            plt.cla()
+            if i_episode % 1000 ==0 and i_episode!=0:
+                print("model saved")
+                with g1.as_default():
+                    RL.storevariable()
 
-            f = open('{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
+                print('**************** check point *****************')
+                print(b_position)
+                print(b_position_2)
+                print(b_position_3)
+                print(b_position_4)
+                print('******')
+                print(i_episode)
+                print(ep_r)
+                print(X)
+                print(Y)
+                print(Z)
+                print(actionlist1)
+                print(total_reward1)
+                print("******")
+                print(ep_r_2)
+                print(X_2)
+                print(Y_2)
+                print(Z_2)
+                print(actionlist2)
+                print(total_reward2)
+                print("****")
+                print(ep_r_3)
+                print(X_3)
+                print(Y_3)
+                print(Z_3)
+                print(actionlist3)
+                print(total_reward3)
+                print("****")
+                print(ep_r_4)
+                print(X_4)
+                print(X_4)
+                print(X_4)
+                print(actionlist4)
+                print(total_reward4)
+                print("******")
+                print(X_B)
+                print(Y_B)
+                print(Z_B)
+                # trajectorysave(X,Y,Z,i_episode,title)
+                # trajectorysave(X_B, Y_B, Z_B, i_episode, "bluetra")
+                # painter = Painter(X, Y, Z, X_B, Y_B, Z_B)
+                # painter.plotfigure(i_episode)
+                # painter.plotfigure(i_episode,title,ep_r)
+                print("over")
+                print(title)
+                ax1.set_xlim(-100, 100)
+                ax1.set_ylim(-100, 100)
+                ax1.set_zlim(0, 50)
+                # x0 = np.arange(9, 11, 0.1)
+                # y0= np.arange(9,11,0.1)
+                # ??????
+                # x1 , y1 = np.meshgrid(x0, y0)
+                # ??Z????
+                # z1 = x1*y1*0+20
+                # ax1.plot_surface(x1, y1, z1, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
+                # ax1.scatter3D(X, Y, Z, c='r')
+                # u =np.linspace(0,2*np.pi,1000)
+                # v =np.linspace(0,2*np.pi,1000)
+                # x = b_position_next[0] + 20 * np.outer(np.cos(u), np.sin(v))
+                # y = b_position_next[1] + 20 * np.outer(np.sin(u), np.sin(v))
+                # z = b_position_next[2] + 20 * np.outer(np.ones(np.size(u)), np.cos(v))
+                # ax1.plot_surface(x, y, z, cmap=plt.get_cmap('rainbow'))
+                ax1.plot3D(X, Y, Z, 'red')
+                ax1.plot3D(X_2, Y_2, Z_2, 'red')
+                ax1.plot3D(X_3, Y_3, Z_3, 'red')
+                ax1.plot3D(X_4, Y_4, Z_4, 'red')
+                ax1.plot3D(X_B, Y_B, Z_B, 'blue')
+                ax1.plot3D(X_B_2, Y_B_2, Z_B_2, 'blue')
+                ax1.plot3D(X_B_3, Y_B_3, Z_B_3, 'blue')
+                ax1.plot3D(X_B_4, Y_B_4, Z_B_4, 'blue')
+                ax1.scatter3D(X_B, Y_B, Z_B, c='b')
+                ax1.scatter3D(X_B_2, Y_B_2, Z_B_2, c='b')
+                ax1.scatter3D(X_B_3, Y_B_3, Z_B_3, c='b')
+                ax1.scatter3D(X_B_4, Y_B_4, Z_B_4, c='b')
+                plt.savefig(
+                    "{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_',
+                                                    ep_r_4), dpi=300)
+                # plt.savefig("{}{}{:.2f}{:.2f}{}{}{}{}{}{}.png".format(i_episode, title, ep_r,ep_r_2, '**', X_B[0], '_', Y_B[0], '_', Z_B[0]), dpi=300)
+                plt.cla()
 
-            csv_writer = csv.writer(f)
-            csv_writer.writerow(["time/s", "uavid", "x","y","z","target_id","x","y","z"])
-            for i in range(len(X)):
-                csv_writer.writerow([i,"1",X[i]*100,Y[i]*100,Z[i]*100,"1",X_B[i]*100,Y_B[i]*100,Z_B[i]*100])
-            for i in range(len(X_2)):
-                csv_writer.writerow([i,"2",X_2[i]*100,Y_2[i]*100,Z_2[i]*100,"2",X_B_2[i]*100,Y_B_2[i]*100,Z_B_2[i]*100])
-            for i in range(len(X_3)):
-                csv_writer.writerow([i,"3",X_3[i]*100,Y_3[i]*100,Z_3[i]*100,"3",X_B_3[i]*100,Y_B_3[i]*100,Z_B_3[i]*100])
-            for i in range(len(X_4)):
-                csv_writer.writerow([i, "4", X_4[i] * 100, Y_4[i] * 100, Z_4[i] * 100, "4", X_B_4[i] * 100, Y_B_4[i] * 100,Z_B_4[i] * 100])
-            f.close()
-            break
+                f = open('{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
+
+                csv_writer = csv.writer(f)
+                csv_writer.writerow(["time/s", "uavid", "x","y","z","target_id","x","y","z"])
+                for i in range(len(X)):
+                    csv_writer.writerow([i,"1",X[i]*100,Y[i]*100,Z[i]*100,"1",X_B[i]*100,Y_B[i]*100,Z_B[i]*100])
+                for i in range(len(X_2)):
+                    csv_writer.writerow([i,"2",X_2[i]*100,Y_2[i]*100,Z_2[i]*100,"2",X_B_2[i]*100,Y_B_2[i]*100,Z_B_2[i]*100])
+                for i in range(len(X_3)):
+                    csv_writer.writerow([i,"3",X_3[i]*100,Y_3[i]*100,Z_3[i]*100,"3",X_B_3[i]*100,Y_B_3[i]*100,Z_B_3[i]*100])
+                for i in range(len(X_4)):
+                    csv_writer.writerow([i, "4", X_4[i] * 100, Y_4[i] * 100, Z_4[i] * 100, "4", X_B_4[i] * 100, Y_B_4[i] * 100,Z_B_4[i] * 100])
+                f.close()
+                break
