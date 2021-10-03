@@ -308,12 +308,12 @@ for i_episode in range(10000000):
                 ax1.scatter3D(X_B_3, Y_B_3, Z_B_3, c='b')
                 ax1.scatter3D(X_B_4, Y_B_4, Z_B_4, c='b')
                 plt.savefig(
-                    "{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_',
+                    "./info/{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_',
                                                     ep_r_4), dpi=300)
                 # plt.savefig("{}{}{:.2f}{:.2f}{}{}{}{}{}{}.png".format(i_episode, title, ep_r,ep_r_2, '**', X_B[0], '_', Y_B[0], '_', Z_B[0]), dpi=300)
                 plt.cla()
 
-                f = open('{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
+                f = open('./info/{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
 
                 csv_writer = csv.writer(f)
                 csv_writer.writerow(["time/s", "uavid", "x","y","z","target_id","x","y","z"])
