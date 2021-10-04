@@ -375,10 +375,10 @@ class Env():
         self.dangeous_module_2(r_position_next_1,r_position_next_2,r_position_next_3,r_position_next_4)
         self.reward_global = 0 # reward_1 + reward_2 + reward_3 + reward_4
 
-        if self.title_1 =="1crash2" or self.title_1 == "1crash3" or self.title_1 == "1crash4" or self.title_2 == "2crash3" or self.title_2 == "2crash4" or self.title_3 == "3crash4":
-            self.done = True
-            self.title = self.title_1 + self.title_2 + self.title_3 + self.title_4 + 'crash'
-            self.reward_global = -100
+        # if self.title_1 =="1crash2" or self.title_1 == "1crash3" or self.title_1 == "1crash4" or self.title_2 == "2crash3" or self.title_2 == "2crash4" or self.title_3 == "3crash4":
+        #     self.done = True
+        #     self.title = self.title_1 + self.title_2 + self.title_3 + self.title_4 + 'crash'
+        #     self.reward_global = -100
         
         if self.j == self.MAX_STEPS:
             self.done = True
@@ -738,7 +738,7 @@ class Env():
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
+                R1 = 500
                 self.flag_1 = 1
                 self.title_1 = 'red_1_win'
             elif q_b_ < 30:
@@ -766,7 +766,7 @@ class Env():
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
+                R1 = 500
                 self.flag_2 = 1
                 self.title_2 = 'red_2_win'
             elif q_b_ < 30:
@@ -794,7 +794,7 @@ class Env():
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
+                R1 = 500
                 self.flag_3 = 1
                 self.title_3 = 'red_3_win'
             elif q_b_ < 30:
@@ -822,7 +822,7 @@ class Env():
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
+                R1 = 500
                 self.flag_4 = 1
                 self.title_4 = 'red_4_win'
             elif q_b_ < 30:
