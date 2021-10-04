@@ -228,13 +228,13 @@ for i_episode in range(int(1e7)):
         if done_all:
             total_steps += steps
             print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="episode", simple_value=i_episode)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_1", simple_value=ep_r)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_2", simple_value=ep_r_2)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_3", simple_value=ep_r_3)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_4", simple_value=ep_r_4)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="loss", simple_value=loss)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="RL.epsilon", simple_value=RL.epsilon)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/episode", simple_value=i_episode)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_1", simple_value=ep_r)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_2", simple_value=ep_r_2)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_3", simple_value=ep_r_3)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_4", simple_value=ep_r_4)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/loss", simple_value=loss)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/epsilon", simple_value=RL.epsilon)]), global_step=total_steps) 
 
             writer.flush()
             if i_episode % 1000 ==0 and i_episode!=0:
