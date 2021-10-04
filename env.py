@@ -706,32 +706,31 @@ class Env():
         
         return position_r_next_1, position_b_next_1, position_r_next_2, position_b_next_2, position_r_next_3, position_b_next_3, position_r_next_4, position_b_next_4
 
-    def dangeous(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
-        weight = 0.8
-        R1 = 0
-        if d < 20:
-            if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
-            elif q_b_ < 30:
-                R1 = -50
-        elif h < 0 or h > 40:
-            R1 = -50
-        else:
-            R1 = 0
-        s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        # if d > 20:
-        #     s2 = abs(d) / 10.0
-        # else:
-        #     s2 = 0.0
-        s2 = abs(d) / 10.0
-        if delta_h > 20:
-            s3 = 0.1
-        else:
-            s3 = 0.5 - (delta_h / 40)
-        s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
-        R = weight * R1 - (1 - weight) * s * 10
-        return R / 10.0
+    # def dangeous(self, taishi):
+    #     q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
+    #     weight = 0.8
+    #     R1 = 0
+    #     if d < 20:
+    #         if q_r_ < 30 and q_b_ > 30:
+    #             R1 = 65
+    #         elif q_b_ < 30:
+    #             R1 = -50
+    #     elif h < 0 or h > 40:
+    #         R1 = -50
+    #     else:
+    #         R1 = 0
+    #     s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
+    #     if d > 20:
+    #         s2 = abs(d) / 10.0
+    #     else:
+    #         s2 = 0.0
+    #     if delta_h > 20:
+    #         s3 = 0.1
+    #     else:
+    #         s3 = 0.5 - (delta_h / 40)
+    #     s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
+    #     R = weight * R1 - (1 - weight) * s * 10
+    #     return R / 10.0
 
     def dangeous_1(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
@@ -749,11 +748,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        # if d > 20:
-        #     s2 = abs(d) / 10.0
-        # else:
-        #     s2 = 0.0
-        s2 = abs(d) / 10.0
+        s1 /= 10
+        if d > 20:
+            s2 = abs(d) / 100.0
+        else:
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -778,11 +777,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        # if d > 20:
-        #     s2 = abs(d) / 10.0
-        # else:
-        #     s2 = 0.0
-        s2 = abs(d) / 10.0
+        s1 /= 10
+        if d > 20:
+            s2 = abs(d) / 100.0
+        else:
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -807,11 +806,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        # if d > 20:
-        #     s2 = abs(d) / 10.0
-        # else:
-        #     s2 = 0.0
-        s2 = abs(d) / 10.0
+        s1 /= 10
+        if d > 20:
+            s2 = abs(d) / 100.0
+        else:
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -836,12 +835,12 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        # if d > 20:
-        #     s2 = abs(d) / 10.0
-        # else:
-        #     s2 = 0.0
-        s2 = abs(d) / 10.0
-
+        s1 /= 10
+        if d > 20:
+            s2 = abs(d) / 100.0
+        else:
+            s2 = 0.0
+            
         if delta_h > 20:
             s3 = 0.1
         else:

@@ -21,7 +21,7 @@ g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
                   n_features=32,
-                  learning_rate=1e-4, 
+                  learning_rate=5e-4, 
                   e_greedy=0.99,
                   replace_target_iter=600, 
                   memory_size=int(1e5),
