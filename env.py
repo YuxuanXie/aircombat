@@ -85,7 +85,7 @@ class Env():
         # universal parameters
         self.d = 1
         self.j = 0
-        self.MAX_STEPS = 200
+        self.MAX_STEPS = 60
         self.done = False
 
         self.title = 'normal'
@@ -378,48 +378,48 @@ class Env():
         if self.title_1 =="1crash2" or self.title_1 == "1crash3" or self.title_1 == "1crash4" or self.title_2 == "2crash3" or self.title_2 == "2crash4" or self.title_3 == "3crash4":
             self.done = True
             self.title = self.title_1 + self.title_2 + self.title_3 + self.title_4 + 'crash'
-            self.reward_global = -50
+            self.reward_global = -100
         
         if self.j == self.MAX_STEPS:
             self.done = True
             self.title = self.title_1 + self.title_2+self.title_3 +self.title_4 +'over_step'
-            self.reward_global = -50
+            self.reward_global = -100
         
-        if r_position_next_1[0] > 100 or r_position_next_1[0] < -100 \
-                or r_position_next_1[1] > 100 or r_position_next_1[1] < -100 \
-                or r_position_next_1[2] > 50 or r_position_next_1[2] < 1 \
-                or b_position_next_1[0] > 100 or b_position_next_1[0] < -100 \
-                or b_position_next_1[1] > 100 or b_position_next_1[1] < -100 \
-                or b_position_next_1[2] > 50 or b_position_next_1[2] < 0 \
-                or r_position_next_2[0] > 100 or r_position_next_2[0] < -100 \
-                or r_position_next_2[1] > 100 or r_position_next_2[1] < -100 \
-                or r_position_next_2[2] > 50 or r_position_next_2[2] < 1 \
-                or b_position_next_2[0] > 100 or b_position_next_2[0] < -100 \
-                or b_position_next_2[1] > 100 or b_position_next_2[1] < -100 \
-                or b_position_next_2[2] > 50 or b_position_next_2[2] < 0 \
-                or r_position_next_3[0] > 100 or r_position_next_3[0] < -100 \
-                or r_position_next_3[1] > 100 or r_position_next_3[1] < -100 \
-                or r_position_next_3[2] > 50 or r_position_next_3[2] < 1 \
-                or b_position_next_3[0] > 100 or b_position_next_3[0] < -100 \
-                or b_position_next_3[1] > 100 or b_position_next_3[1] < -100 \
-                or b_position_next_3[2] > 50 or b_position_next_3[2] < 0 \
-                or r_position_next_4[0] > 100 or r_position_next_4[0] < -100 \
-                or r_position_next_4[1] > 100 or r_position_next_4[1] < -100 \
-                or r_position_next_4[2] > 50 or r_position_next_4[2] < 1 \
-                or b_position_next_4[0] > 100 or b_position_next_4[0] < -100 \
-                or b_position_next_4[1] > 100 or b_position_next_4[1] < -100 \
-                or b_position_next_4[2] > 50 or b_position_next_4[2] < 0:
-            self.done = True
-            self.title = self.title_1 + self.title_2 + self.title_3 + self.title_4 + 'over_range'
-            self.reward_global = -50
+        # if r_position_next_1[0] > 100 or r_position_next_1[0] < -100 \
+        #         or r_position_next_1[1] > 100 or r_position_next_1[1] < -100 \
+        #         or r_position_next_1[2] > 50 or r_position_next_1[2] < 1 \
+        #         or b_position_next_1[0] > 100 or b_position_next_1[0] < -100 \
+        #         or b_position_next_1[1] > 100 or b_position_next_1[1] < -100 \
+        #         or b_position_next_1[2] > 50 or b_position_next_1[2] < 0 \
+        #         or r_position_next_2[0] > 100 or r_position_next_2[0] < -100 \
+        #         or r_position_next_2[1] > 100 or r_position_next_2[1] < -100 \
+        #         or r_position_next_2[2] > 50 or r_position_next_2[2] < 1 \
+        #         or b_position_next_2[0] > 100 or b_position_next_2[0] < -100 \
+        #         or b_position_next_2[1] > 100 or b_position_next_2[1] < -100 \
+        #         or b_position_next_2[2] > 50 or b_position_next_2[2] < 0 \
+        #         or r_position_next_3[0] > 100 or r_position_next_3[0] < -100 \
+        #         or r_position_next_3[1] > 100 or r_position_next_3[1] < -100 \
+        #         or r_position_next_3[2] > 50 or r_position_next_3[2] < 1 \
+        #         or b_position_next_3[0] > 100 or b_position_next_3[0] < -100 \
+        #         or b_position_next_3[1] > 100 or b_position_next_3[1] < -100 \
+        #         or b_position_next_3[2] > 50 or b_position_next_3[2] < 0 \
+        #         or r_position_next_4[0] > 100 or r_position_next_4[0] < -100 \
+        #         or r_position_next_4[1] > 100 or r_position_next_4[1] < -100 \
+        #         or r_position_next_4[2] > 50 or r_position_next_4[2] < 1 \
+        #         or b_position_next_4[0] > 100 or b_position_next_4[0] < -100 \
+        #         or b_position_next_4[1] > 100 or b_position_next_4[1] < -100 \
+        #         or b_position_next_4[2] > 50 or b_position_next_4[2] < 0:
+        #     self.done = True
+        #     self.title = self.title_1 + self.title_2 + self.title_3 + self.title_4 + 'over_range'
+        #     self.reward_global = -50
         
         if self.title_1 == 'red_1_win' and self.title_2 == 'red_2_win'and self.title_3 == 'red_3_win'and self.title_4 == 'red_4_win':
             self.done = True
             self.title = self.title_1 + self.title_2+ self.title_3+ self.title_4 + 'winner'
-            self.reward_global = 100
+            self.reward_global = 200
         
         rewards = [reward_1, reward_2, reward_3, reward_4]
-        # rewards = [r + self.reward_global/4.0 for r in rewards]
+        rewards = [r + self.reward_global/4.0 for r in rewards]
         return r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2,r_position_next_3, b_position_next_3,r_position_next_4, b_position_next_4, state__1_next, state__2_next,state__3_next,state__4_next, rewards, self.flag_1,self.flag_2,self.flag_3,self.flag_4,self.done, self.title
 
     def action(self, choose_1, choose_2, choose_3, choose_4):
@@ -721,9 +721,9 @@ class Env():
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
         if d > 20:
-            s2 = 1
+            s2 = abs(d) / 10.0
         else:
-            s2 = 0.5
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -749,9 +749,9 @@ class Env():
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
         if d > 20:
-            s2 = 1
+            s2 = abs(d) / 10.0
         else:
-            s2 = 0.5
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -777,9 +777,9 @@ class Env():
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
         if d > 20:
-            s2 = 1
+            s2 = abs(d) / 10.0
         else:
-            s2 = 0.5
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -805,9 +805,9 @@ class Env():
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
         if d > 20:
-            s2 = 1
+            s2 = abs(d) / 10.0
         else:
-            s2 = 0.5
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -833,9 +833,9 @@ class Env():
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
         if d > 20:
-            s2 = 1
+            s2 = abs(d) / 10.0
         else:
-            s2 = 0.5
+            s2 = 0.0
         if delta_h > 20:
             s3 = 0.1
         else:
