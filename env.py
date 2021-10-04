@@ -85,7 +85,7 @@ class Env():
         # universal parameters
         self.d = 1
         self.j = 0
-        self.MAX_STEPS = 100
+        self.MAX_STEPS = 60
         self.done = False
 
         self.title = 'normal'
@@ -730,7 +730,7 @@ class Env():
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R
+        return R / 10.0
 
     def dangeous_1(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
@@ -758,7 +758,7 @@ class Env():
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R
+        return R / 10.0
 
     def dangeous_2(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[8:16]
@@ -786,7 +786,7 @@ class Env():
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R
+        return R / 10.0
 
     def dangeous_3(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[16:24]
@@ -814,7 +814,7 @@ class Env():
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R
+        return R / 10.0
 
     def dangeous_4(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[-8:]
@@ -842,7 +842,7 @@ class Env():
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R
+        return R / 10.0
 
     def dangeous1_modle_2(self, r_positon1,r_positon2,r_position3,r_position4):
         distance3D1 = self.distance3dimensional(r_positon1,r_positon2)
