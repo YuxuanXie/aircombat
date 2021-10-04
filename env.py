@@ -85,7 +85,7 @@ class Env():
         # universal parameters
         self.d = 1
         self.j = 0
-        self.MAX_STEPS = 60
+        self.MAX_STEPS = 100
         self.done = False
 
         self.title = 'normal'

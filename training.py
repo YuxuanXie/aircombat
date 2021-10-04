@@ -29,7 +29,11 @@ with g1.as_default():
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 env = Env(4, 4)
-
+statistics = {
+    "winner" : 0,
+    "over_step" : 0,
+    "crash" : 0,
+}
 for i_episode in range(int(1e7)):
     env = Env(4, 4)
     # if i_episode % 10000 == 0:
@@ -206,10 +210,10 @@ for i_episode in range(int(1e7)):
         Z_B_4.append(b_position_next_4[2])
 
         with g1.as_default():
-            RL.store_transition(situation_information, action, rewards[0], situation_information_next)
-            RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2)
-            RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3)
-            RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4)
+            if not done_1: RL.store_transition(situation_information, action, rewards[0], situation_information_next)
+            if not done_2: RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2)
+            if not done_3: RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3)
+            if not done_4: RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4)
 
         situation_information = situation_information_next
         situation_information_2 = situation_information_next_2
@@ -228,6 +232,8 @@ for i_episode in range(int(1e7)):
         if done_all:
             total_steps += steps
             print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+            for each in statistics.keys():
+                statistics[each] += 1/1000 if each in title else 0
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/episode", simple_value=i_episode)]), global_step=total_steps) 
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_1", simple_value=ep_r)]), global_step=total_steps) 
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/reward_2", simple_value=ep_r_2)]), global_step=total_steps) 
@@ -238,6 +244,9 @@ for i_episode in range(int(1e7)):
 
             writer.flush()
             if i_episode % 1000 ==0 and i_episode!=0:
+                for each in statistics.keys():
+                    writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag=f"data/{each}_rate", simple_value=statistics[each])]), global_step=total_steps) 
+                    statistics[each] = 0
                 print("model saved")
                 with g1.as_default():
                     RL.storevariable()
