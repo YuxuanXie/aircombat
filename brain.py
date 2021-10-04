@@ -195,9 +195,9 @@ class DeepQNetwork:
     def storew_b_test(self,num):
         saver = tf.train.Saver()
         saver.save(self.sess, global_step=num)
-    def storevariable(self):
+    def storevariable(self, i_episode):
         saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_new/save_net.ckpt")
+        save_path =saver.save(self.sess, f"my_net_new/save_net_{i_episode}.ckpt")
         print(save_path)
     def storevariable_2(self):
         saver = tf.train.Saver()

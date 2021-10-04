@@ -249,7 +249,7 @@ for i_episode in range(int(1e7)):
                     statistics[each] = 0
                 print("model saved")
                 with g1.as_default():
-                    RL.storevariable()
+                    RL.storevariable(i_episode)
 
                 print('**************** check point *****************')
                 print(b_position)
