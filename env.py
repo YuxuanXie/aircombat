@@ -720,10 +720,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = abs(d) / 10.0
-        else:
-            s2 = 0.0
+        # if d > 20:
+        #     s2 = abs(d) / 10.0
+        # else:
+        #     s2 = 0.0
+        s2 = abs(d) / 10.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -734,7 +735,7 @@ class Env():
 
     def dangeous_1(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
-        weight = 0.8
+        weight = 0.2
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
@@ -748,10 +749,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = abs(d) / 10.0
-        else:
-            s2 = 0.0
+        # if d > 20:
+        #     s2 = abs(d) / 10.0
+        # else:
+        #     s2 = 0.0
+        s2 = abs(d) / 10.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -762,7 +764,7 @@ class Env():
 
     def dangeous_2(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[8:16]
-        weight = 0.8
+        weight = 0.2
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
@@ -776,10 +778,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = abs(d) / 10.0
-        else:
-            s2 = 0.0
+        # if d > 20:
+        #     s2 = abs(d) / 10.0
+        # else:
+        #     s2 = 0.0
+        s2 = abs(d) / 10.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -790,7 +793,7 @@ class Env():
 
     def dangeous_3(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[16:24]
-        weight = 0.8
+        weight = 0.2
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
@@ -804,10 +807,11 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = abs(d) / 10.0
-        else:
-            s2 = 0.0
+        # if d > 20:
+        #     s2 = abs(d) / 10.0
+        # else:
+        #     s2 = 0.0
+        s2 = abs(d) / 10.0
         if delta_h > 20:
             s3 = 0.1
         else:
@@ -818,7 +822,7 @@ class Env():
 
     def dangeous_4(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[-8:]
-        weight = 0.8
+        weight = 0.2
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
@@ -832,10 +836,12 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = abs(d) / 10.0
-        else:
-            s2 = 0.0
+        # if d > 20:
+        #     s2 = abs(d) / 10.0
+        # else:
+        #     s2 = 0.0
+        s2 = abs(d) / 10.0
+
         if delta_h > 20:
             s3 = 0.1
         else:

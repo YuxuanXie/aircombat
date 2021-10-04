@@ -21,10 +21,12 @@ g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
                   n_features=32,
-                  learning_rate=1e-4, e_greedy=0.99,
-                  replace_target_iter=200, memory_size=int(1e6),
-                  e_greedy_decrement=1e-5,
-                  batch_size=256)
+                  learning_rate=1e-4, 
+                  e_greedy=0.99,
+                  replace_target_iter=600, 
+                  memory_size=int(1e5),
+                  e_greedy_decrement=5e-6,
+                  batch_size=512)
     # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
@@ -34,10 +36,10 @@ statistics = {
     "over_step" : 0,
     "crash" : 0,
 }
-for i_episode in range(int(1e7)):
-    env = Env(4, 4)
-    # if i_episode % 10000 == 0:
-    #     env = Env(4, 4)
+for i_episode in range(int(1e8)):
+    # env = Env(4, 4)
+    if i_episode % 10000 == 0:
+        env = Env(4, 4)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -231,7 +233,7 @@ for i_episode in range(int(1e7)):
 
         if done_all:
             total_steps += steps
-            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, max(ep_r, ep_r_2, ep_r_3, ep_r_4), title))
             for each in statistics.keys():
                 statistics[each] += 1/1000 if each in title else 0
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/episode", simple_value=i_episode)]), global_step=total_steps) 
@@ -243,7 +245,7 @@ for i_episode in range(int(1e7)):
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="data/epsilon", simple_value=RL.epsilon)]), global_step=total_steps) 
 
             writer.flush()
-            if i_episode % 1000 ==0 and i_episode!=0:
+            if i_episode % 10000 ==0 and i_episode!=0:
                 for each in statistics.keys():
                     writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag=f"data/{each}_rate", simple_value=statistics[each])]), global_step=total_steps) 
                     statistics[each] = 0
