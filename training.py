@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # 导入 socket、sys 模块
 import os
 os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
