@@ -419,7 +419,7 @@ class Env():
             self.reward_global = 200
         
         rewards = [reward_1, reward_2, reward_3, reward_4]
-        rewards = [r + self.reward_global/4.0 for r in rewards]
+        # rewards = [r + self.reward_global/4.0 for r in rewards]
         return r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2,r_position_next_3, b_position_next_3,r_position_next_4, b_position_next_4, state__1_next, state__2_next,state__3_next,state__4_next, rewards, self.flag_1,self.flag_2,self.flag_3,self.flag_4,self.done, self.title
 
     def action(self, choose_1, choose_2, choose_3, choose_4):
@@ -734,11 +734,11 @@ class Env():
 
     def dangeous_1(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
-        weight = 0.2
+        weight = 0.8
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 500
+                R1 = 65
                 self.flag_1 = 1
                 self.title_1 = 'red_1_win'
             elif q_b_ < 30:
@@ -748,26 +748,24 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        s1 /= 10
         if d > 20:
-            s2 = abs(d) / 100.0
+            s2 = 1
         else:
-            s2 = 0.0
+            s2 = 0.5
         if delta_h > 20:
             s3 = 0.1
         else:
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R / 10.0
-
+        return R
     def dangeous_2(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[8:16]
-        weight = 0.2
+        weight = 0.8
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 500
+                R1 = 65
                 self.flag_2 = 1
                 self.title_2 = 'red_2_win'
             elif q_b_ < 30:
@@ -777,26 +775,25 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        s1 /= 10
         if d > 20:
-            s2 = abs(d) / 100.0
+            s2 = 1
         else:
-            s2 = 0.0
+            s2 = 0.5
         if delta_h > 20:
             s3 = 0.1
         else:
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R / 10.0
+        return R
 
     def dangeous_3(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[16:24]
-        weight = 0.2
+        weight = 0.8
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 500
+                R1 = 65
                 self.flag_3 = 1
                 self.title_3 = 'red_3_win'
             elif q_b_ < 30:
@@ -806,26 +803,24 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        s1 /= 10
         if d > 20:
-            s2 = abs(d) / 100.0
+            s2 = 1
         else:
-            s2 = 0.0
+            s2 = 0.5
         if delta_h > 20:
             s3 = 0.1
         else:
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R / 10.0
-
+        return R
     def dangeous_4(self, taishi):
         q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[-8:]
-        weight = 0.2
+        weight = 0.8
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
-                R1 = 500
+                R1 = 65
                 self.flag_4 = 1
                 self.title_4 = 'red_4_win'
             elif q_b_ < 30:
@@ -835,19 +830,17 @@ class Env():
         else:
             R1 = 0
         s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        s1 /= 10
         if d > 20:
-            s2 = abs(d) / 100.0
+            s2 = 1
         else:
-            s2 = 0.0
-            
+            s2 = 0.5
         if delta_h > 20:
             s3 = 0.1
         else:
             s3 = 0.5 - (delta_h / 40)
         s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
         R = weight * R1 - (1 - weight) * s * 10
-        return R / 10.0
+        return R
 
     def dangeous1_modle_2(self, r_positon1,r_positon2,r_position3,r_position4):
         distance3D1 = self.distance3dimensional(r_positon1,r_positon2)

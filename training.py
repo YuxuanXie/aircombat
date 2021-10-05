@@ -25,6 +25,7 @@ with g1.as_default():
                   n_features=32,
                   learning_rate=5e-4, 
                   e_greedy=0.99,
+                  reward_decay=0.9,
                   replace_target_iter=600, 
                   memory_size=int(1e5),
                   e_greedy_decrement=5e-6,

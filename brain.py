@@ -9,7 +9,7 @@ class DeepQNetwork:
             n_actions,
             n_features,
             learning_rate=0.0001,
-            reward_decay=0.99,
+            reward_decay=0.9,
             e_greedy=0.9,
             replace_target_iter=300,
             memory_size=int(1e5),
