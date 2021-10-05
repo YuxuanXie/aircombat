@@ -9,7 +9,7 @@ class DeepQNetwork:
             n_actions,
             n_features,
             learning_rate=0.0001,
-            reward_decay=0.99,
+            reward_decay=0.9,
             e_greedy=0.9,
             replace_target_iter=300,
             memory_size=int(1e5),
@@ -137,7 +137,7 @@ class DeepQNetwork:
             sample_index = np.random.choice(self.memory_counter, size=self.batch_size)
         batch_memory = self.memory[sample_index, :]
 
-        q_next, q_eval = self.sess.run(
+        q_next_target, q = self.sess.run(
             [self.q_next, self.q_eval],
             feed_dict={
                 self.s_: batch_memory[:, -self.n_features:],  # fixed params
@@ -145,13 +145,15 @@ class DeepQNetwork:
             })
 
         # change q_target w.r.t q_eval's action
-        q_target = q_eval.copy()
+        q_next = self.sess.run(self.q_eval, feed_dict={self.s: batch_memory[:, -self.n_features:]})
+
+        q_next_argmax_a = np.argmax(q_next_target, axis=-1)
 
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         eval_act_index = batch_memory[:, self.n_features].astype(int)
         reward = batch_memory[:, self.n_features + 1]
 
-        q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
+        q[batch_index, eval_act_index] = reward + self.gamma * q_next[batch_index, q_next_argmax_a]
 
         """
         For example in this batch I have 2 samples and 3 actions:
@@ -178,7 +180,7 @@ class DeepQNetwork:
         # train eval network
         _, self.cost = self.sess.run([self._train_op, self.loss],
                                      feed_dict={self.s: batch_memory[:, :self.n_features],
-                                                self.q_target: q_target})
+                                                self.q_target: q})
         self.cost_his.append(self.cost)
 
         # increasing epsilon
@@ -195,10 +197,12 @@ class DeepQNetwork:
     def storew_b_test(self,num):
         saver = tf.train.Saver()
         saver.save(self.sess, global_step=num)
-    def storevariable(self):
+
+    def storevariable(self, i_episode):
         saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_new/save_net.ckpt")
+        save_path =saver.save(self.sess, f"my_net_new/save_net{i_episode}.ckpt")
         print(save_path)
+
     def storevariable_2(self):
         saver = tf.train.Saver()
         save_path =saver.save(self.sess,"my_net_new_2/save_net.ckpt")

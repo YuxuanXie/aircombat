@@ -12,22 +12,23 @@ from env import Env
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
+from datetime import datetime
 
-writer = tf.summary.FileWriter('./tblog')
+writer = tf.summary.FileWriter('./tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
 
 g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
                   n_features=32,
-                  learning_rate=1e-3, e_greedy=0.99,
+                  learning_rate=1e-4, e_greedy=0.99,
                   replace_target_iter=600, memory_size=int(1e5),
                   e_greedy_decrement=1e-5,
-                  batch_size=512)
+                  batch_size=128)
     # RL.addw_b_test()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 
-for i_episode in range(int(1e7)):
+for i_episode in range(int(1e8)):
     env = Env(4, 4)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
@@ -229,13 +230,13 @@ for i_episode in range(int(1e7)):
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_3", simple_value=ep_r_3)]), global_step=total_steps) 
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_4", simple_value=ep_r_4)]), global_step=total_steps) 
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="loss", simple_value=loss)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="RL.epsilon", simple_value=loss)]), global_step=total_steps) 
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="RL.epsilon", simple_value=RL.epsilon)]), global_step=total_steps)
 
             writer.flush()
             if i_episode % 1000 ==0 and i_episode!=0:
                 print("model saved")
                 with g1.as_default():
-                    RL.storevariable()
+                    RL.storevariable(i_episode)
 
                 print('**************** check point *****************')
                 print(b_position)
