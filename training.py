@@ -14,17 +14,25 @@ from mpl_toolkits.mplot3d import Axes3D
 import csv
 from datetime import datetime
 
-writer = tf.summary.FileWriter('./tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+logdir = './tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+infodir = logdir.replace("tblog", "log/info")
+os.mkdir(infodir)
+modeldir = logdir.replace("tblog", "log/model")
+
+writer = tf.summary.FileWriter(logdir)
 
 g1 = tf.Graph()
 with g1.as_default():
     RL = DeepQNetwork(n_actions=10,
-                  n_features=32,
-                  learning_rate=1e-4, e_greedy=0.99,
-                  replace_target_iter=600, memory_size=int(1e5),
-                  e_greedy_decrement=1e-5,
-                  batch_size=128)
+                    n_features=32,
+                    learning_rate=1e-4,
+                    e_greedy=0.99,
+                    replace_target_iter=200,
+                    memory_size=int(1e5),
+                    e_greedy_decrement=1e-6,
+                    batch_size=256)
     # RL.addw_b_test()
+    # RL.load_model()
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 
@@ -136,6 +144,8 @@ for i_episode in range(int(1e8)):
     steps = 0
     title = ''
     loss = 0
+    ignore = [0 for _ in range(4)]
+    if_training = not i_episode % 10000 == 0
 
     while not done_all:
         steps += 1
@@ -147,24 +157,29 @@ for i_episode in range(int(1e8)):
 
         with g1.as_default():
             if done_1 == 0:
-                action = RL.choose_action(state)
+                action = RL.choose_action(state, training=if_training)
             else:
                 action = 9
+                ignore[0] = 1
         with g1.as_default():
             if done_2 == 0:
-                action_2 = RL.choose_action(state_2)
+                action_2 = RL.choose_action(state_2, training=if_training)
             else:
                 action_2 = 9
+                ignore[1] = 1
         with g1.as_default():
             if done_3 == 0:
-                r_action_number_3 = RL.choose_action(state_3)
+                r_action_number_3 = RL.choose_action(state_3, training=if_training)
             else:
                 r_action_number_3 = 9
+                ignore[2] = 1
         with g1.as_default():
             if done_4 == 0:
-                r_action_number_4 = RL.choose_action(state_4)
+                r_action_number_4 = RL.choose_action(state_4, training=if_training)
             else:
                 r_action_number_4 = 9
+                ignore[3] = 1
+
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
 
         actionlist1.append(action)
@@ -202,10 +217,10 @@ for i_episode in range(int(1e8)):
         Z_B_4.append(b_position_next_4[2])
 
         with g1.as_default():
-            RL.store_transition(situation_information, action, rewards[0], situation_information_next)
-            RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2)
-            RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3)
-            RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4)
+            if ignore[0] == 0: RL.store_transition(situation_information, action, rewards[0], situation_information_next, done_1)
+            if ignore[1] == 0: RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2, done_2)
+            if ignore[2] == 0: RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3, done_3)
+            if ignore[3] == 0: RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4, done_4)
 
         situation_information = situation_information_next
         situation_information_2 = situation_information_next_2
@@ -223,20 +238,28 @@ for i_episode in range(int(1e8)):
 
         if done_all:
             total_steps += steps
-            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="episode", simple_value=i_episode)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_1", simple_value=ep_r)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_2", simple_value=ep_r_2)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_3", simple_value=ep_r_3)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_4", simple_value=ep_r_4)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="loss", simple_value=loss)]), global_step=total_steps) 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="RL.epsilon", simple_value=RL.epsilon)]), global_step=total_steps)
+            if i_episode % 100 == 0 and i_episode!=0:
+                print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/episode", simple_value=i_episode)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_1", simple_value=ep_r)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_2", simple_value=ep_r_2)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_3", simple_value=ep_r_3)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_4", simple_value=ep_r_4)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/loss", simple_value=loss)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/RL.epsilon", simple_value=RL.epsilon)]), global_step=total_steps)
+                writer.flush()
 
-            writer.flush()
-            if i_episode % 1000 ==0 and i_episode!=0:
+            if i_episode % 5000 ==0 and i_episode!=0:
+                print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_1", simple_value=ep_r)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_2", simple_value=ep_r_2)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_3", simple_value=ep_r_3)]), global_step=total_steps)
+                writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_4", simple_value=ep_r_4)]), global_step=total_steps)
+                writer.flush()
+
                 print("model saved")
                 with g1.as_default():
-                    RL.storevariable(i_episode)
+                    RL.storevariable(modeldir + f"/{i_episode}")
 
                 print('**************** check point *****************')
                 print(b_position)
@@ -312,13 +335,11 @@ for i_episode in range(int(1e8)):
                 ax1.scatter3D(X_B_2, Y_B_2, Z_B_2, c='b')
                 ax1.scatter3D(X_B_3, Y_B_3, Z_B_3, c='b')
                 ax1.scatter3D(X_B_4, Y_B_4, Z_B_4, c='b')
-                plt.savefig(
-                    "./info/{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_',
-                                                    ep_r_4), dpi=300)
+                plt.savefig( infodir + "/{}{}{}{}{}{}{}{}{}.png".format(i_episode, title, ep_r, '_', ep_r_2, '_', ep_r_3, '_', ep_r_4), dpi=300)
                 # plt.savefig("{}{}{:.2f}{:.2f}{}{}{}{}{}{}.png".format(i_episode, title, ep_r,ep_r_2, '**', X_B[0], '_', Y_B[0], '_', Z_B[0]), dpi=300)
                 plt.cla()
 
-                f = open('./info/{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
+                f = open( infodir + '/{}.csv'.format(i_episode), 'w',encoding='utf-8',newline='' "")
 
                 csv_writer = csv.writer(f)
                 csv_writer.writerow(["time/s", "uavid", "x","y","z","target_id","x","y","z"])

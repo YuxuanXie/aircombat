@@ -12,11 +12,12 @@ class Env():
         self.n_agent = n_agent
         self.n_target = n_target
         self.target_for_agents = target_for_agents
+        self.random_size = 3
 
         # first agent and first target
         # self.r_position_1 = [4+random.randint(-2,2),4+random.randint(-2,2),30+random.randint(0,2)]
         self.r_position_1 = [-20+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
-        self.b_position_1 = [5+random.randint(-2,2), 5+random.randint(-2,2), 0]
+        self.b_position_1 = [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
         self.v_r_1 = 1
         self.v_b_1 = 0.1
         self.gamma_r_1 = 0
@@ -26,7 +27,7 @@ class Env():
 
         # second agent and second target
         self.r_position_2 = [-25+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
-        self.b_position_2 =  [-5+random.randint(-2,2), 5+random.randint(-2,2), 0]
+        self.b_position_2 =  [-5+random.randint(-self.random_size, self.random_size), 5+random.randint(-2,2), 0]
         self.v_r_2 = 1
         self.v_b_2 = 0.1
         self.gamma_r_2 = 0
@@ -35,9 +36,9 @@ class Env():
         self.pusin_b_2 = 90+random.randint(-10,10)
 
         # third agent and third target
-        self.r_position_3 = [-25+random.randint(0,2), -15+random.randint(0,15), 30+random.randint(0,2)]
+        self.r_position_3 = [-15+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
         #self.b_position_3 = [12 + random.randint(-2, 2), 16 + random.randint(-2, 2), 0]
-        self.b_position_3 =  [-5+random.randint(-2,2), -5+random.randint(-2,2), 0]
+        self.b_position_3 =  [-5+random.randint(-self.random_size,self.random_size), -5+random.randint(-self.random_size,self.random_size), 0]
         self.v_r_3 = 1
         self.v_b_3 = 0.1
         self.gamma_r_3 = 0
@@ -46,8 +47,8 @@ class Env():
         self.pusin_b_3 = 90+random.randint(-10,10)
 
         # forth agent and forth target
-        self.r_position_4 = [-20+random.randint(0,2), -15+random.randint(0,15), 30+random.randint(0,2)]
-        self.b_position_4 =  [5+random.randint(-2,2), -5+random.randint(-2,2), 0]
+        self.r_position_4 = [-10+random.randint(0,2), 15+random.randint(0,15), 30+random.randint(0,2)]
+        self.b_position_4 =  [5+random.randint(-self.random_size,self.random_size), -5+random.randint(-self.random_size,self.random_size), 0]
         self.v_r_4 = 1
         self.v_b_4 = 0.1
         self.gamma_r_4 = 0
@@ -416,10 +417,11 @@ class Env():
         if self.title_1 == 'red_1_win' and self.title_2 == 'red_2_win'and self.title_3 == 'red_3_win'and self.title_4 == 'red_4_win':
             self.done = True
             self.title = self.title_1 + self.title_2+ self.title_3+ self.title_4 + 'winner'
-            self.reward_global = 500
+            self.reward_global = 100
         
         rewards = [reward_1, reward_2, reward_3, reward_4]
-        # rewards = [r + self.reward_global/4.0 for r in rewards]
+        rewards = [r + self.reward_global/4.0 for r in rewards]
+        rewards = [ r * 0.1 if r < 0 else r for r in rewards]
         return r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2,r_position_next_3, b_position_next_3,r_position_next_4, b_position_next_4, state__1_next, state__2_next,state__3_next,state__4_next, rewards, self.flag_1,self.flag_2,self.flag_3,self.flag_4,self.done, self.title
 
     def action(self, choose_1, choose_2, choose_3, choose_4):
@@ -737,12 +739,9 @@ class Env():
         weight = 0.8
         R1 = 0
         if d < 20:
-            if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
-                self.flag_1 = 1
-                self.title_1 = 'red_1_win'
-            elif q_b_ < 30:
-                R1 = -50
+            R1 = 65
+            self.flag_1 = 1
+            self.title_1 = 'red_1_win'
         elif h < 0 or h > 40:
             R1 = -50
         else:

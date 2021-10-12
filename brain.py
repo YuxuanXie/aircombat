@@ -33,7 +33,7 @@ class DeepQNetwork:
         self.learn_step_counter = 0
 
         # initialize zero memory [s, a, r, s_]
-        self.memory = np.zeros((int(self.memory_size), n_features * 2 + 2))
+        self.memory = np.zeros((int(self.memory_size), n_features * 2 + 3))
 
         # consist of [target_net, evaluate_net]
         self._build_net()
@@ -99,11 +99,11 @@ class DeepQNetwork:
                 self.q_next = tf.matmul(l1, w2) + b2
 
 
-    def store_transition(self, s, a, r, s_):
+    def store_transition(self, s, a, r, s_, done):
         if not hasattr(self, 'memory_counter'):
             self.memory_counter = 0
 
-        transition = np.hstack((s, [a, r], s_))
+        transition = np.hstack((s, [a, r, done], s_))
 
         # replace the old memory with new memory
         index = self.memory_counter % int(self.memory_size)
@@ -111,10 +111,10 @@ class DeepQNetwork:
 
         self.memory_counter += 1
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, training=True):
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
-        if np.random.uniform() < self.epsilon:
+        if np.random.uniform() < self.epsilon and training:
             action = np.random.randint(0, self.n_actions)
         else:
             # forward feed the observation and get q value for every actions
@@ -152,8 +152,9 @@ class DeepQNetwork:
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         eval_act_index = batch_memory[:, self.n_features].astype(int)
         reward = batch_memory[:, self.n_features + 1]
+        done = batch_memory[:, self.n_features + 2]
 
-        q[batch_index, eval_act_index] = reward + self.gamma * q_next[batch_index, q_next_argmax_a]
+        q[batch_index, eval_act_index] = reward + (1-done) * self.gamma * q_next[batch_index, q_next_argmax_a]
 
         """
         For example in this batch I have 2 samples and 3 actions:
@@ -198,60 +199,13 @@ class DeepQNetwork:
         saver = tf.train.Saver()
         saver.save(self.sess, global_step=num)
 
-    def storevariable(self, i_episode):
+    def storevariable(self, fileName):
         saver = tf.train.Saver()
-        save_path =saver.save(self.sess, f"my_net_new/save_net{i_episode}.ckpt")
+        save_path =saver.save(self.sess, fileName + ".ckpt")
         print(save_path)
 
-    def storevariable_2(self):
+
+    def load_model(self, model_path):
         saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_new_2/save_net.ckpt")
-        print(save_path)
-    def storevariable_3(self):
-        saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_new_3/save_net.ckpt")
-        print(save_path)
-    def storevariable_4(self):
-        saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_new_4/save_net.ckpt")
-        print(save_path)
-    def storevariable_6(self):
-        saver = tf.train.Saver()
-        save_path =saver.save(self.sess,"my_net_6/save_net.ckpt")
-        print(save_path)
-    def addw_b_test(self):
-        #g = tf.get_default_graph()
-        #print(g.get_operations())
-        #a=self.sess.run('eval_net/l1/b1:0')
-        #saver = tf.train.import_meta_graph('./my_net_new/save_net.ckpt.meta')
-        saver = tf.train.Saver()
-        saver.restore(self.sess,'./my_net_new/save_net.ckpt')
-        #a=self.sess.run('eval_net/l1/b1:0')
-        #print(a)
-        #print(a)
-        #    print ("No Model")
-    def addw_b_test_2(self):
-        #g = tf.get_default_graph()
-        #print(g.get_operations())
-        #a = self.sess.run('eval_net/l1/b1:0')
-        saver = tf.train.Saver()
-        #ckpt = tf.train.get_checkpoint_state('./222/')
-        #if ckpt and ckpt.model_checkpoint_path:
-            #print('**************************************')
-            #print(ckpt.model_checkpoint_path)
-            #print ("Model restord")
-        saver.restore(self.sess,'./my_net_new_2/save_net.ckpt')
-        #a = self.sess.run('eval_net/l1/b1:0')
-        #print(a)
-        #print(a)
-        #else:
-        #    print ("No Model")
-    def addw_b_test_3(self):
-        saver = tf.train.Saver()
-        saver.restore(self.sess,'./my_net_new_3/save_net.ckpt')
-    def addw_b_test_4(self):
-        saver = tf.train.Saver()
-        saver.restore(self.sess,'./my_net_new_4/save_net.ckpt')
-    def addw_b_test_6(self):
-        saver = tf.train.Saver()
-        saver.restore(self.sess,'./my_net_6/save_net.ckpt')
+        saver.restore(self.sess, model_path)
+
