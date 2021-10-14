@@ -20,15 +20,15 @@ os.mkdir(infodir)
 
 writer = tf.summary.FileWriter(logdir)
 
-g1 = tf.Graph()
-with g1.as_default():
-    RL = DeepQNetwork(n_actions=10,
-                  n_features=32,
-                  learning_rate=1e-4, e_greedy=0.99,
-                  replace_target_iter=600, memory_size=int(1e5),
-                  e_greedy_decrement=1e-5,
-                  batch_size=128)
-    RL.load_model("./log/model/2021-10-08-15-52-32/570000.ckpt")
+# g1 = tf.Graph()
+# with g1.as_default():
+#     RL = DeepQNetwork(n_actions=10,
+#                   n_features=32,
+#                   learning_rate=1e-4, e_greedy=0.99,
+#                   replace_target_iter=600, memory_size=int(1e5),
+#                   e_greedy_decrement=1e-5,
+#                   batch_size=128)
+#     RL.load_model("./log/model/2021-10-08-15-52-32/570000.ckpt")
 total_steps = 0
 
 ax1 = plt.axes(projection='3d')
@@ -179,8 +179,10 @@ for i_episode in range(int(1e8)):
         data = np.array(recvdata, dtype=np.int32)
         # data = [0, 0, 1,1,1,1]
         print(data)
-        action   = data[0]
-        action_2 = data[1]
+        action   = data[0] if done_1 == 0 else 9
+        action_2 = data[1] if done_2 == 0 else 9
+        r_action_number_3 = data[2] if done_3 == 0 else 9
+        r_action_number_4 = data[3] if done_4 == 0 else 9
 
         steps += 1
         # data = [0, 0, 1,1,1,1]
@@ -202,18 +204,18 @@ for i_episode in range(int(1e8)):
         #         action_2 = 9
         #         ignore[1] = 1
 
-        with g1.as_default():
-            if done_3 == 0:
-                r_action_number_3 = RL.choose_action(state_3, training=False)
-            else:
-                r_action_number_3 = 9
-                ignore[2] = 1
-        with g1.as_default():
-            if done_4 == 0:
-                r_action_number_4 = RL.choose_action(state_4, training=False)
-            else:
-                r_action_number_4 = 9
-                ignore[3] = 1
+        # with g1.as_default():
+        #     if done_3 == 0:
+        #         r_action_number_3 = RL.choose_action(state_3, training=False)
+        #     else:
+        #         r_action_number_3 = 9
+        #         ignore[2] = 1
+        # with g1.as_default():
+        #     if done_4 == 0:
+        #         r_action_number_4 = RL.choose_action(state_4, training=False)
+        #     else:
+        #         r_action_number_4 = 9
+        #         ignore[3] = 1
 
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
 
@@ -251,11 +253,11 @@ for i_episode in range(int(1e8)):
         Y_B_4.append((b_position_next_4[1]))
         Z_B_4.append(b_position_next_4[2])
 
-        with g1.as_default():
-            if ignore[0] == 0: RL.store_transition(situation_information, action, rewards[0], situation_information_next, done_1)
-            if ignore[1] == 0: RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2, done_2)
-            if ignore[2] == 0: RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3, done_3)
-            if ignore[3] == 0: RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4, done_4)
+        # with g1.as_default():
+        #     if ignore[0] == 0: RL.store_transition(situation_information, action, rewards[0], situation_information_next, done_1)
+        #     if ignore[1] == 0: RL.store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2, done_2)
+        #     if ignore[2] == 0: RL.store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3, done_3)
+        #     if ignore[3] == 0: RL.store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4, done_4)
 
         situation_information = situation_information_next
         situation_information_2 = situation_information_next_2
@@ -267,9 +269,6 @@ for i_episode in range(int(1e8)):
         ep_r_3 += rewards[2]
         ep_r_4 += rewards[3]
 
-        # if total_steps > 1000:
-        #     with g1.as_default():
-        #         loss = RL.learn()
 
         send = situation_information + situation_information_2 + situation_information_3 + situation_information_4 + [done_1, done_2, done_3, done_4, done_all]
         send = np.array(send, dtype=np.float32)
@@ -278,7 +277,7 @@ for i_episode in range(int(1e8)):
 
         if done_all:
             total_steps += steps
-            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, 0.0, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
             # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="episode", simple_value=i_episode)]), global_step=total_steps)
             # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_1", simple_value=ep_r)]), global_step=total_steps)
             # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="reward_2", simple_value=ep_r_2)]), global_step=total_steps)

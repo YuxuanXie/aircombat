@@ -19,18 +19,22 @@ infodir = logdir.replace("tblog", "log/info")
 os.mkdir(infodir)
 modeldir = logdir.replace("tblog", "log/model")
 
-g1 = tf.Graph()
-with g1.as_default():
-    RL = DeepQNetwork(n_actions=10,
-                  n_features=32,
-                  learning_rate=1e-4, e_greedy=0.99,
-                  replace_target_iter=600, memory_size=int(1e5),
-                  e_greedy_decrement=1e-5,
-                  batch_size=128)
-    # RL.addw_b_test()
-    RL.load_model('./log/model/2021-10-09-19-33-50/2275000.ckpt')
+g = [tf.Graph() for _ in range(4)]
+RL = [None]*4
+for i in range(4):
+    with g[i].as_default():
+        RL[i] = DeepQNetwork(n_actions=10,
+                      n_features=32,
+                      learning_rate=1e-4, e_greedy=0.99,
+                      replace_target_iter=600, memory_size=int(1e5),
+                      e_greedy_decrement=1e-5,
+                      batch_size=128)
+        RL[i].load_model(f'./log/model/2021-10-14-13-59-44/85000_agent{i}.ckpt')
 total_steps = 0
 ax1 = plt.axes(projection='3d')
+
+
+
 
 winner_count = 0
 
@@ -153,27 +157,27 @@ for i_episode in range(int(1e2)):
         state_3 = np.array(situation_information_3)
         state_4 = np.array(situation_information_4)
 
-        with g1.as_default():
+        with g[0].as_default():
             if done_1 == 0:
-                action = RL.choose_action(state, training=if_training)
+                action = RL[0].choose_action(state, training=if_training)
             else:
                 action = 9
                 ignore[0] = 1
-        with g1.as_default():
+        with g[1].as_default():
             if done_2 == 0:
-                action_2 = RL.choose_action(state_2, training=if_training)
+                action_2 = RL[1].choose_action(state_2, training=if_training)
             else:
                 action_2 = 9
                 ignore[1] = 1
-        with g1.as_default():
+        with g[2].as_default():
             if done_3 == 0:
-                r_action_number_3 = RL.choose_action(state_3, training=if_training)
+                r_action_number_3 = RL[2].choose_action(state_3, training=if_training)
             else:
                 r_action_number_3 = 9
                 ignore[2] = 1
-        with g1.as_default():
+        with g[3].as_default():
             if done_4 == 0:
-                r_action_number_4 = RL.choose_action(state_4, training=if_training)
+                r_action_number_4 = RL[3].choose_action(state_4, training=if_training)
             else:
                 r_action_number_4 = 9
                 ignore[3] = 1
@@ -226,10 +230,8 @@ for i_episode in range(int(1e2)):
 
         if done_all:
             total_steps += steps
-            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL.epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+            print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL[0].epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
             winner_count += 1 if 'winner' in title else 0
-            if 'winner' in title:
-
             if i_episode % 100 ==0 and i_episode!=0:
                 print('**************** check point *****************')
                 print(b_position)

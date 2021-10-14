@@ -27,7 +27,7 @@ class Env():
 
         # second agent and second target
         self.r_position_2 = [-25+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
-        self.b_position_2 =  [-5+random.randint(-self.random_size, self.random_size), 5+random.randint(-2,2), 0]
+        self.b_position_2 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
         self.v_r_2 = 1
         self.v_b_2 = 0.1
         self.gamma_r_2 = 0
@@ -38,7 +38,7 @@ class Env():
         # third agent and third target
         self.r_position_3 = [-15+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
         #self.b_position_3 = [12 + random.randint(-2, 2), 16 + random.randint(-2, 2), 0]
-        self.b_position_3 =  [-5+random.randint(-self.random_size,self.random_size), -5+random.randint(-self.random_size,self.random_size), 0]
+        self.b_position_3 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
         self.v_r_3 = 1
         self.v_b_3 = 0.1
         self.gamma_r_3 = 0
@@ -48,7 +48,7 @@ class Env():
 
         # forth agent and forth target
         self.r_position_4 = [-10+random.randint(0,2), 15+random.randint(0,15), 30+random.randint(0,2)]
-        self.b_position_4 =  [5+random.randint(-self.random_size,self.random_size), -5+random.randint(-self.random_size,self.random_size), 0]
+        self.b_position_4 =  [5+random.randint(-self.random_size,self.random_size), 5+random.randint(-self.random_size,self.random_size), 0]
         self.v_r_4 = 1
         self.v_b_4 = 0.1
         self.gamma_r_4 = 0
@@ -356,19 +356,19 @@ class Env():
 
         '''评估奖励'''
         if self.flag_1 == 0:
-            reward_1 = self.dangeous_1(state__1)
+            reward_1 = self.dangeous(state__1, 0)
         else:
             reward_1 = 0
         if self.flag_2 == 0:
-            reward_2 = self.dangeous_2(state__2)
+            reward_2 = self.dangeous(state__2, 1)
         else:
             reward_2 = 0
         if self.flag_3 == 0:
-            reward_3 = self.dangeous_3(state__3)
+            reward_3 = self.dangeous(state__3, 2)
         else :
             reward_3 = 0
         if self.flag_4 == 0:
-            reward_4 = self.dangeous_4(state__4)
+            reward_4 = self.dangeous(state__4, 3)
         else:
             reward_4 = 0
 
@@ -708,124 +708,25 @@ class Env():
         
         return position_r_next_1, position_b_next_1, position_r_next_2, position_b_next_2, position_r_next_3, position_b_next_3, position_r_next_4, position_b_next_4
 
-    def dangeous(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
+    def dangeous(self, taishi, agent):
+        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[8*agent:8*(agent+1)]
         weight = 0.8
         R1 = 0
         if d < 20:
             if q_r_ < 30 and q_b_ > 30:
                 R1 = 65
-            elif q_b_ < 30:
-                R1 = -50
-        elif h < 0 or h > 40:
-            R1 = -50
-        else:
-            R1 = 0
-        s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = d / 10.0
-        else:
-            s2 = 0.5
-        if delta_h > 20:
-            s3 = 0.1
-        else:
-            s3 = 0.5 - (delta_h / 40)
-        s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
-        R = weight * R1 - (1 - weight) * s * 10
-        return R
-
-    def dangeous_1(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[0:8]
-        weight = 0.8
-        R1 = 0
-        if d < 20:
-            R1 = 65
-            self.flag_1 = 1
-            self.title_1 = 'red_1_win'
-        elif h < 0 or h > 40:
-            R1 = -50
-        else:
-            R1 = 0
-        s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = 1.0
-        else:
-            s2 = 0.5
-        if delta_h > 20:
-            s3 = 0.1
-        else:
-            s3 = 0.5 - (delta_h / 40)
-        s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
-        R = weight * R1 - (1 - weight) * s * 10
-        return R
-
-    def dangeous_2(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[8:16]
-        weight = 0.8
-        R1 = 0
-        if d < 20:
-            if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
-                self.flag_2 = 1
-                self.title_2 = 'red_2_win'
-            elif q_b_ < 30:
-                R1 = -50
-        elif h < 0 or h > 40:
-            R1 = -50
-        else:
-            R1 = 0
-        s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = 1.0
-        else:
-            s2 = 0.5
-        if delta_h > 20:
-            s3 = 0.1
-        else:
-            s3 = 0.5 - (delta_h / 40)
-        s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
-        R = weight * R1 - (1 - weight) * s * 10
-        return R
-
-    def dangeous_3(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[16:24]
-        weight = 0.8
-        R1 = 0
-        if d < 20:
-            if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
-                self.flag_3 = 1
-                self.title_3 = 'red_3_win'
-            elif q_b_ < 30:
-                R1 = -50
-        elif h < 0 or h > 40:
-            R1 = -50
-        else:
-            R1 = 0
-        s1 = (abs(q_r_) * 3.141592653 / 180 + abs(q_b_) * 3.141592653 / 180) / 2 * 3.141592653
-        if d > 20:
-            s2 = 1.0
-        else:
-            s2 = 0.5
-        if delta_h > 20:
-            s3 = 0.1
-        else:
-            s3 = 0.5 - (delta_h / 40)
-        s = 0.2 * s1 + 0.6 * s2 + 0.2 * s3
-        R = weight * R1 - (1 - weight) * s * 10
-        return R
-
-    def dangeous_4(self, taishi):
-        q_r_, q_b_, d, beta_, delta_h, delta_v2, v2, h = taishi[-8:]
-        weight = 0.8
-        R1 = 0
-        if d < 20:
-            if q_r_ < 30 and q_b_ > 30:
-                R1 = 65
-                self.flag_4 = 1
-                self.title_4 = 'red_4_win'
-            elif q_b_ < 30:
-                R1 = -50
+                if agent == 0:
+                    self.flag_1 = 1
+                    self.title_1 = f'red_{agent+1}_win'
+                elif agent == 1:
+                    self.flag_2 = 1
+                    self.title_2 = f'red_{agent+1}_win'
+                elif agent == 2:
+                    self.flag_3 = 1
+                    self.title_3 = f'red_{agent+1}_win'
+                else:
+                    self.flag_4 = 1
+                    self.title_4 = f'red_{agent+1}_win'
         elif h < 0 or h > 40:
             R1 = -50
         else:
