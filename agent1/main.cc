@@ -1,6 +1,6 @@
 /*
  * Empty C++ Application
-	agnet1
+ * agnet1   
  */
 #include <iostream>     // std::cout
 #include <algorithm>    // std::generate
