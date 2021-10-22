@@ -43,6 +43,7 @@ int DQN::calculateMaxOutput(float *eval_output)
 	float a6 = eval_output[6];
 	float a7 = eval_output[7];
 	float a8 = eval_output[8];
+	float a9 = eval_output[9];
 
 	int action = 0;
 	for(int i = 0; i < action_n; i++)
@@ -72,7 +73,7 @@ int DQN::choose_action_egreedy()
 	else
 	{
 		e_greedy -= (INITIAL_EPSILON - FINAL_EPSILON) / 10000;
-		cout << "e_greedy->" << e_greedy << endl;
+		//cout << "e_greedy->" << e_greedy << endl;
 		action = -1;
 	}
 	//cout << "choose action e_greedy" << randF << "action->" << action << endl;
@@ -84,7 +85,7 @@ int DQN::choose_action_random()
 {
 	int action;
 	float randF = (rand() % 100 + 1) / 100.f;
-	cout << randF << endl;
+	//cout << randF << endl;
 	action = rand() % (action_n);
 	return action;
 }

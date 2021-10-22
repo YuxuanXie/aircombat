@@ -74,12 +74,12 @@ void Memory::generateRandomBatchdata(float* experience_mem)
 			index[i] = dis(gen);
 		}
 	}
-	cout << "batch random index:";
-	for(int i = 0; i < batchsize; i++)
-	{
-		cout << index[i] << " ";
-	}
-	cout << endl;
+	//cout << "batch random index:";
+	//for(int i = 0; i < batchsize; i++)
+	//{
+	//	cout << index[i] << " ";
+	//}
+	//cout << endl;
 	for (int i = 0; i < batchsize; i++)
 	{
 		int order = index[i];

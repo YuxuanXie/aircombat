@@ -18,12 +18,12 @@ void compute(float*ex_memory,unsigned Batch_size,int iter_n,float *result,float 
 void calcu_error(float*ex_memory,unsigned batch,hls::stream<float>&eval_Q,hls::stream<float>&Target_Q,hls::stream<float>&strm_out,float *result,int iter_n,bool mode);
 void data_check(bool check,float *result);
 
-void replace_weight(bool rp);
+void replace_weight();
 void replace_w1();
 void replace_w2();
 
 
-void update_weight();
+void update_weight(bool mode);
 void update_W1();
 void update_W2();
 

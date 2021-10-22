@@ -36,11 +36,4 @@ public:
 
 
 
-
-
-
-
-
-
-
 #endif /* SRC_SERVER_HPP_ */

@@ -21,7 +21,8 @@
 #include "memory.hpp"
 #include "server.hpp"
 #define AGENT_NUM 4
-
+#define SLEEP_TIME  1
+#define USLEEP_TIME  1000
 using namespace std;
 void agent1_func();
 
@@ -44,8 +45,8 @@ float *inputvector = new float[L1_NUM];
 float *eval_bias = new float[L2_NUM+L3_NUM];
 float *target_matrix = new float[L1_NUM*L2_NUM+L2_NUM*L3_NUM];
 float *target_bias = new float[L2_NUM+L3_NUM];
-vector<float> rewardvector;
-float *state = new float[L1_NUM];
+
+
 float *next_state = new float[L1_NUM];
 #define FPGA_COMPUTE 1
 volatile float *SHARED_BASE ;
@@ -64,176 +65,140 @@ float reset=1;
 bool mode=0;
 
 ClientNet client;
-float SendBuffer[AGENT_NUM] = {0,0,0,0};
+float SendBuffer[AGENT_NUM] = {0};
 float RevBuffer[L1_NUM*AGENT_NUM+5];
 
-volatile bool need_state1 = false;
-volatile bool need_state2 = false;
-volatile bool need_state3 = false;
-volatile bool need_state4 = false;
+#define  BASE_PORT 9000
+volatile bool need_state [AGENT_NUM] = {0};
 
-volatile bool done1 = false;
-volatile bool done2 = false;
-volatile bool done3 = false;
-volatile bool done4 = false;
-volatile bool done_all = false;
+volatile bool done[AGENT_NUM] = {0};
 
+float send_agent_buffer[AGENT_NUM-1][L1_NUM+1] = {0};
 
-
-//server2
-float send_agent2_buffer[L1_NUM+1];
-std::mutex send2_buffer_mutex;
-float recv_agent2_buffer = 0;
-std::mutex recv2_buffer_mutex;
-
-float send_agent3_buffer[L1_NUM+3];
-std::mutex send3_buffer_mutex;
-float recv_agent3_buffer = 0;
-std::mutex recv3_buffer_mutex;
-
-float send_agent4_buffer[L1_NUM+3];
-std::mutex send4_buffer_mutex;
-float recv_agent4_buffer= 0;
-std::mutex recv4_buffer_mutex;
-
+float recv_agent_buffer[AGENT_NUM-1] = {0};
 
 struct  timeval start;
 struct  timeval middle1;
-struct  timeval middle2;
-struct  timeval endtime;
+struct  timeval infer_time_start;
+struct  timeval infer_time_end;
+#define sleep_time = 1
+#define usleep_time = 1000
 
 void client_send(){
-	std::lock_guard<std::mutex> guard(recv2_buffer_mutex);
-	SendBuffer[0]=action;
-	SendBuffer[1]=recv_agent2_buffer;
-	SendBuffer[2]=recv_agent3_buffer;
-	SendBuffer[3]=recv_agent4_buffer;
+	for(int i=0;i<AGENT_NUM;i++){
+		if(i==0){
+			SendBuffer[0] = action;
+			continue;
+		}
+		else SendBuffer[i] = recv_agent_buffer[i-1];
+	}
+
 	client.ClientSend((char *)&SendBuffer, sizeof(SendBuffer));
-	cout<<"send to PC |--|  action1:"<<action<<" action2:"<<recv_agent2_buffer
-			<<" action3:"<<recv_agent3_buffer
-			<<" action4:"<<recv_agent4_buffer<<endl;
+
+	cout<<"Thread0:send to PC |--|  actions: \t";
+	for(int i = 0;i<AGENT_NUM;i++){
+		cout<<SendBuffer[i]<<" / ";
+	}
+	cout<<endl;
 }
 
 
 void client_recv(){
-	std::lock_guard<std::mutex> guard(send2_buffer_mutex);
 	client.ClientRecv((char *)&RevBuffer, sizeof(RevBuffer));//从主机接收信息
-	cout<<"recv from PC |--| done1:"<<RevBuffer[AGENT_NUM*L1_NUM]
-			<<" done2:"<<RevBuffer[AGENT_NUM*L1_NUM+1]
-			<<" done3:"<<RevBuffer[AGENT_NUM*L1_NUM+2]
-			<<" done4:"<<RevBuffer[AGENT_NUM*L1_NUM+3]<<endl;
-	memcpy(send_agent2_buffer,&RevBuffer[L1_NUM],L1_NUM*sizeof(float));//
-	memcpy(&send_agent2_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+1],1*sizeof(float));//接受state2、done2
+	cout<<"Thread0:recv from PC |---| state:"<<endl;
+	for(int i=0;i<AGENT_NUM*L1_NUM;i+=L1_NUM){
+		cout<<RevBuffer[i]<<" ||| ";
+	}
+	cout<<endl;
+	cout<<"Thread0:recv from PC |---| done: \t";
+	for(int i=0;i<AGENT_NUM;i++){
+		cout<<RevBuffer[AGENT_NUM*L1_NUM+i]<<" ||| ";
+		if(i!=0){
+			memcpy(&send_agent_buffer[i-1][0],&RevBuffer[L1_NUM*i],L1_NUM*sizeof(float));
+			memcpy(&send_agent_buffer[i-1][L1_NUM],&RevBuffer[AGENT_NUM*L1_NUM+i],sizeof(float));
+		}
+		if(RevBuffer[AGENT_NUM*L1_NUM+i]!=1&&!done[i])	need_state[i] = false;	else{	done[i] = true;	need_state[i] = true;}
 
-	memcpy(send_agent3_buffer,&RevBuffer[2*L1_NUM],L1_NUM*sizeof(float));//
-	memcpy(&send_agent3_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+2],1*sizeof(float));//接受state3、done3
-
-    memcpy(send_agent4_buffer,&RevBuffer[3*L1_NUM],L1_NUM*sizeof(float));//
-    memcpy(&send_agent4_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+3],1*sizeof(float));//接受state3、done3
-
-    done_all = RevBuffer[AGENT_NUM*L1_NUM+4];
-
-	if(RevBuffer[AGENT_NUM*L1_NUM]!=1)	need_state1 = false;	else{	done1 = true;	need_state1 = true;}
-	if(send_agent2_buffer[32]!=1)		need_state2 = false;	else{	done2 = true;	need_state2 = true;}
-	if(send_agent3_buffer[32]!=1)		need_state3 = false;	else{	done4 = true;	need_state3 = true;}
-	if(send_agent4_buffer[32]!=1)		need_state4 = false;	else{	done4 = true;	need_state4 = true;}
+	}
+	cout<<endl;
 }
-//server.Recv((char *)&actionlist,4);
-//server.Send((char *)&RevBuffer,268);
-void server_agent2_func(){
+void server_agent_func(int agent_id){
    	CServer server;
-    if(server.initserver(9020)==false)  cout<<"port:9020 cannot connect."<<endl;
-    if(server.Accept()==false)  cout<<"port:9020   cannot accept."<<endl;
-	server.Send((char *)&send_agent2_buffer,sizeof(send_agent2_buffer));
-	cout<<"agent2 connected."<<endl;
-   	while(!done2){
-   		//server.Send((char *)&begin2,sizeof(int));
-   		server.Recv((char *)&recv_agent2_buffer,sizeof(recv_agent2_buffer));//接受动作信息
-		need_state2  =true;
-		while(need_state2);
-		server.Send((char *)&send_agent2_buffer,sizeof(send_agent2_buffer));
-   	}
-   	cout<<"Agent2 has accomplished task."<<endl;
+   	cout<<this_thread::get_id();
+   	printf("Thread%d :Server is ready for agent_%d.\n",agent_id,agent_id);
+   	int port = BASE_PORT+agent_id*10;
+    if(server.initserver(port)==false)  printf("Thread%d:Port:%d cannot connect.\n",agent_id,port);
+    if(server.Accept()==false)  printf("Thread%d:Port:%d cannot connect.\n",agent_id,port);
+	server.Send((char *)&send_agent_buffer[agent_id-2],sizeof(send_agent_buffer[0]));
+	printf("Thread%d: Agent_%d connected in port_%d.\n",agent_id,agent_id,port);
+	while(!done[agent_id-1]){
+		usleep(USLEEP_TIME);
+		printf("Thread%d:waiting for receiving from agent_%d.\n",agent_id,agent_id);
+   		server.Recv((char *)&recv_agent_buffer[agent_id-2],sizeof(recv_agent_buffer[0]));//接受动作信息
+   		printf("Thread%d:receiving from agent_%d over(action_%d : %f).\n",agent_id,agent_id,agent_id,recv_agent_buffer[agent_id-2]);
+
+   		need_state[agent_id-1]  =true;
+		while(!done[agent_id-1]&&need_state[agent_id-1]){
+	   		usleep(USLEEP_TIME);;
+		}
+		if(!done[agent_id-1]){
+			printf("Thread%d:waiting for sending to agent_%d.\n",agent_id,agent_id);
+			server.Send((char *)&send_agent_buffer[agent_id-2][0],sizeof(send_agent_buffer[0]));
+			printf("Thread%d:sending to agent_%d over(done_%d : %f).\n",agent_id,agent_id,agent_id,send_agent_buffer[agent_id-2][L1_NUM]);
+		}
+		else	printf("Thread%d:Agent_%d has accomplished task.\n",agent_id,agent_id);
+	}
 }
-void server_agent3_func(){
-   	CServer server;
-    if(server.initserver(9030)==false)  cout<<"port:9030 cannot connect."<<endl;
-    if(server.Accept()==false)  cout<<"port:9030   cannot accept."<<endl;
-	server.Send((char *)&send_agent3_buffer,sizeof(send_agent3_buffer));
-	cout<<"agent3 connected."<<endl;
-   	while(!done3){
-   		//server.Send((char *)&begin2,sizeof(int));
-   		server.Recv((char *)&recv_agent3_buffer,sizeof(recv_agent3_buffer));//接受动作信息
-		need_state3  =true;
-		while(need_state3);
-		server.Send((char *)&send_agent3_buffer,sizeof(send_agent3_buffer));
-   	}
-   	cout<<"Agent3 has accomplished task."<<endl;
-
-}
-void server_agent4_func(){
-   	CServer server;
-    if(server.initserver(9040)==false)  cout<<"port:9040 cannot connect."<<endl;
-    if(server.Accept()==false)  cout<<"port:9040   cannot accept."<<endl;
-	server.Send((char *)&send_agent4_buffer,sizeof(send_agent4_buffer));
-	cout<<"agent4 connected."<<endl;
-   	while(!done4){
-   		//server.Send((char *)&begin2,sizeof(int));
-   		server.Recv((char *)&recv_agent4_buffer,sizeof(recv_agent4_buffer));//接受动作信息
-		need_state4  =true;
-		while(need_state4);
-		server.Send((char *)&send_agent4_buffer,sizeof(send_agent4_buffer));
-   	}
-   	cout<<"Agent4 has accomplished task."<<endl;
-
-}
-
-
-
-
 int main()
 {
 	//配置服务器IP和端口
-	int PORT;
-	string  IP_ADDRESS ;//tolfkinglab wifi
-	cout<<"please input PC server IP and port:"<<endl;
-	cin>>IP_ADDRESS>>PORT;
+	int PORT = 8088;;
+	string  IP_ADDRESS ="192.168.0.5";
+	printf("Please input PC server IP(default input 0 for %s):",IP_ADDRESS.c_str());
+	cin>>IP_ADDRESS;
 	if(IP_ADDRESS =="0"){
-		IP_ADDRESS ="192.168.0.5" ;
+		IP_ADDRESS = "192.168.0.5";
+	}
+	printf("Please input PC server port(default input 0 for %d):",PORT);
+	cin>>PORT;
+	if(PORT == 0 ){
 		PORT = 8088;
 	}
 	cout<<"IP_ADDRESS :"<<IP_ADDRESS<<" PORT:"<<PORT<<endl;
 
    	client.ClientConnect(PORT, IP_ADDRESS.c_str());
 	client_recv();
-	cout<<"Receive first group of  data,and the first element of  RevBuffer is:"<<RevBuffer[0]<<endl;
+   	thread t0(agent1_func);
+   	t0.detach();
+	for(int i  =2; i<=AGENT_NUM;i++){
+	   	thread t1(server_agent_func,i);
+	   	t1.detach();
+	}
 
-   	thread t1(agent1_func);
-   	t1.detach();
-
-   	thread t2(server_agent2_func);
-   	t2.detach();
-   	thread t3(server_agent3_func);
-   	t3.detach();
-   	thread t4(server_agent4_func);
-   	t4.detach();
-   	while(!done_all){
+	gettimeofday(&start,NULL);
+   	while(!done[0]||!done[1]||!done[2]||!done[3]){
    	   	gettimeofday(&middle1,NULL);
-   		long  tt_s = (middle1.tv_sec  -  start.tv_sec)*1000000+middle1.tv_usec  -  start.tv_usec;
-   		if(tt_s%10000000==0)cout<<"using time:"<<tt_s/1000000<<"s"<<endl;//每隔10s打印一次，防止死机
-   		if(need_state1&&need_state2&&need_state3&&need_state4){
+   		unsigned long  tt_s = (middle1.tv_sec  -  start.tv_sec);
+   		unsigned long  tt_ms = (middle1.tv_usec  -  start.tv_usec)/1000;
+   		if(tt_s%10==0&&tt_ms%3000==0)cout<<"		Thread0:using time: "<<tt_s<<" s."<<endl;//每隔10s打印一次，防止死机
+   		if(need_state[0]&&need_state[1]&&need_state[2]&&need_state[3]){
+   	   		//cout<<"Thread0:begin send."<<endl;
    			client_send();
+   	   		//cout<<"Thread0:send over."<<endl;
    			client_recv();
+   	   		//cout<<"Thread0:receive over."<<endl;
    		}
+   		usleep(USLEEP_TIME);
    	}
-   	cout<<"ALL agents have accomplished their tasks!"<<endl;
+   	cout<<"Thread0:ALL agents have accomplished their tasks!"<<endl;
 	// close socket
-	cout<<"Client socket to PC will be closed."<<endl;
+	cout<<"Thread0:Client socket to PC will be closed."<<endl;
 	client.ClientClose();
     return 0;
 }
+
 void agent1_func(){
-		cout<<"agent1 is working."<<endl;
+		cout<<"#Thread1:agent1 is working."<<endl;
 	   	DQN *DQNTEST = new DQN();
 	    Memory memory;
 	    float *experience_mem = ex_memory_Init(DQNTEST->batch_size,DQNTEST->state_n,DQNTEST);//随机初始化经验池
@@ -264,15 +229,29 @@ void agent1_func(){
 
 	    	/**inference ,get the Q value  from  evaluate network*/
 			info.batch_size=1;
+			long  tt_s;
+	   	   	gettimeofday(&infer_time_start,NULL);
 			MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,0,1,0);
+	   	   	gettimeofday(&infer_time_end,NULL);
+	   	   	tt_s = (infer_time_end.tv_sec  -  infer_time_start.tv_sec)*1000000+infer_time_end.tv_usec  -  infer_time_start.tv_usec;
+	   		cout<<"#Thread1:PL 0-1-0 inference time with: "<<tt_s<<" us."<<endl;
 
-			/* Train ,get the update date  value  from PL*/
+	   		/* Train ,get the update date  value  from PL*/
 			info.batch_size=DQNTEST->batch_size;
+
+	   	   	gettimeofday(&infer_time_start,NULL);
 			MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,0,0,0);
+	   	   	gettimeofday(&infer_time_end,NULL);
+	   		tt_s = (infer_time_end.tv_sec  -  infer_time_start.tv_sec)*1000000+infer_time_end.tv_usec  -  infer_time_start.tv_usec;
+	   		cout<<"#Thread1:PL 0-0-0 inference time with: "<<tt_s<<" us."<<endl;
 	    }
 	    else
 	    {
+	   	   	gettimeofday(&infer_time_start,NULL);
 	    	MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,1,0,0);
+	   	   	gettimeofday(&infer_time_end,NULL);
+	   		long  tt_s = (infer_time_end.tv_sec  -  infer_time_start.tv_sec)*1000000+infer_time_end.tv_usec  -  infer_time_start.tv_usec;
+	   		cout<<"#Thread1:PL 1-0-0 inference time with: "<<tt_s<<" us."<<endl;
 
 			FPGA_DQN_core_Init();
 			FPGA_setMemory(info.iter_n);
@@ -289,23 +268,32 @@ void agent1_func(){
 
 				for(int step=0;step<STEP;step++)
 				{
+
 					cout<<"*****************|||episode:"<<episode<<"  step:"<<step<<"/STEP"<<"|||******************"<<endl;
+					cout<<"****************************************************************"<<endl;
 					action = DQNTEST->choose_action_egreedy();
 					if(action==-1)
 					{
 						info.batch_size=1;
 						copy_state_to_dram(inputvector);
 						FPGA_DQN( info, 0, 1, 0);
+
+				   	   	gettimeofday(&infer_time_start,NULL);
 						MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,0,1,0);
+						gettimeofday(&infer_time_end,NULL);
+				   		long  tt_s = (infer_time_end.tv_sec  -  infer_time_start.tv_sec)*1000000+infer_time_end.tv_usec  -  infer_time_start.tv_usec;
+				   		cout<<"#Thread1:PL 0-1-0 inference time with: "<<tt_s<<" us."<<endl;
+
 						copy_ation_from_dram(hw_result);
 						action = DQNTEST->calculateMaxOutput(hw_result);
 					}
 
-
-					need_state1 = true;
-					while(need_state1);
+					need_state[0] = true;
+					while(!done[0]&&need_state[0]){
+						usleep(USLEEP_TIME);
+					}
 					memcpy(next_state,&RevBuffer[0],L1_NUM*sizeof(float));//接受state1、done1
-					memory.push(inputvector, next_state, 0, action,(float)done1);
+					memory.push(inputvector, next_state, 0, action,(float)done[0]);
 
 					if(memory.counter > BATCH_SIZE){
 					   memory.generateRandomBatchdata(experience_mem);
@@ -313,14 +301,18 @@ void agent1_func(){
 					   info.batch_size=DQNTEST->batch_size;
 
 					   FPGA_DQN( info, 0, 0, 1);
-
+					   gettimeofday(&infer_time_start,NULL);
 					   MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,0,0,0);
+					   gettimeofday(&infer_time_end,NULL);
+					   long  tt_s = (infer_time_end.tv_sec  -  infer_time_start.tv_sec)*1000000+infer_time_end.tv_usec  -  infer_time_start.tv_usec;
+					   cout<<"#Thread1:PL 0-0-0 inference time with: "<<tt_s<<" us."<<endl;
+
 					   FPGA_DQN( info, 2,0, 0);
 
 					  // MUAV_fpgatop(experience_mem,inputvector ,matrix ,eval_bias,hw_result,info,2,0,0);
 					}
 					memcpy(inputvector,next_state,(L1_NUM)*sizeof(float));   //state = next_state
-					if(done1)
+					if(done[0])
 						break;
 				}
 
@@ -334,9 +326,10 @@ void agent1_func(){
 						cout<<"**************"<<endl;
 
 						mode=0;
-
-						need_state1 = true;
-						while(need_state1);
+						need_state[0] = true;
+						while(!done[0]&&need_state[0]){
+							usleep(USLEEP_TIME);
+						}
 						memcpy(inputvector,&RevBuffer[0],L1_NUM*sizeof(float));//接受state1、done1
 
 						for(int step=0;step<STEP;step++)
@@ -349,17 +342,22 @@ void agent1_func(){
 
 							action = DQNTEST->calculateMaxOutput(hw_result);
 
-							need_state1 = true;
-							while(need_state1);
-							memcpy(next_state,&RevBuffer[0],L1_NUM*sizeof(float));//接受state1、done1
+							need_state[0] = true;
+							while(!done[0]&&need_state[0]){
+								usleep(USLEEP_TIME);
+							}
+							memcpy(next_state,RevBuffer,L1_NUM*sizeof(float));//接受state1、done1
 
 							memcpy(inputvector,next_state,(L1_NUM)*sizeof(float));   //state = next_state
-							if(done1==1)
+							if(done[0]==1)
 								break;
 						}
+						if(done[0]==1)
+							break;
 					}
 				}
-
+				if(done[0]==1)
+					break;
 				if(episode%REPLACE_FREQ==0)
 				{
 					 FPGA_DQN( info, 2,0, 0);
@@ -368,10 +366,8 @@ void agent1_func(){
 				}
 			}
 	    }
-		for(unsigned int i=0 ;i<rewardvector.size();i++)
-			cout<<rewardvector[i]<<" ";
-		done1  =  true;
-	    need_state1 = true;
+		done[0] = true;
+		need_state[0] = true;
 	    std::cout<<"*************"<<std::endl;
 	    std::cout<<"*agent1 SUCCCESS!!!*"<<std::endl;
 	    std::cout<<"*************"<<std::endl;
@@ -493,9 +489,9 @@ void copy_Initdata_to_dram(float *weight ,float *bias)
 
 void copy_state_to_dram(float *state)
 {
-	 cout<<((float*)SHARED_STATES)[0]<<endl;
+	 //cout<<((float*)SHARED_STATES)[0]<<endl;
 	 memcpy((void *)SHARED_STATES, state, (L1_NUM)*sizeof(float));
-	 cout<<((float*)SHARED_STATES)[0]<<endl;
+	 //cout<<((float*)SHARED_STATES)[0]<<endl;
 
 }
 
@@ -506,8 +502,125 @@ void copy_experience_to_dram(float *experience,int iter)
 
 void copy_ation_from_dram(float *action)
 {
-	  cout<<((float*)SHARED_RESULT)[0]<<endl;
+	  //cout<<((float*)SHARED_RESULT)[0]<<endl;
 	  memcpy(action,(void *)SHARED_RESULT,(L3_NUM)*sizeof(float));
-	  cout<<action[0]<<endl;
+	  //cout<<action[0]<<endl;
 
 }
+/*
+int main()
+{
+	//配置服务器IP和端口
+	int PORT = 8088;;
+	string  IP_ADDRESS ;//tolfkinglab wifi
+	cout<<"please input PC server IP:"<<endl;
+	cin>>IP_ADDRESS;
+	if(IP_ADDRESS =="0"){
+		IP_ADDRESS ="192.168.0.5" ;
+
+	}
+	cout<<"IP_ADDRESS :"<<IP_ADDRESS<<" PORT:"<<PORT<<endl;
+   	client.ClientConnect(PORT, IP_ADDRESS.c_str());
+
+	client.ClientRecv((char *)&RevBuffer, sizeof(RevBuffer));//从主机接收信息
+	cout<<"Thread0:recv from PC |---| done1:"<<RevBuffer[AGENT_NUM*L1_NUM]
+			<<"   done2:"<<RevBuffer[AGENT_NUM*L1_NUM+1]
+			<<"   done3:"<<RevBuffer[AGENT_NUM*L1_NUM+2]
+			<<"   done4:"<<RevBuffer[AGENT_NUM*L1_NUM+3]<<endl;
+	memcpy(send_agent2_buffer,&RevBuffer[L1_NUM],L1_NUM*sizeof(float));//
+	memcpy(&send_agent2_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+1],1*sizeof(float));//接受state2、done2
+
+	memcpy(send_agent3_buffer,&RevBuffer[2*L1_NUM],L1_NUM*sizeof(float));//
+	memcpy(&send_agent3_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+2],1*sizeof(float));//接受state3、done3
+
+    memcpy(send_agent4_buffer,&RevBuffer[3*L1_NUM],L1_NUM*sizeof(float));//
+    memcpy(&send_agent4_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+3],1*sizeof(float));//接受state3、done3
+    done_all = RevBuffer[AGENT_NUM*L1_NUM+4];
+    done1 = RevBuffer[AGENT_NUM*L1_NUM]==1? true:false;
+    done2 = send_agent2_buffer[32]==1? true:false;
+    done3 = send_agent3_buffer[32]==1? true:false;
+    done4 = send_agent4_buffer[32]==1? true:false;
+
+	cout<<"Receive first group of  data,and the first element of  RevBuffer is:"<<RevBuffer[0]<<endl;
+
+	CServer server2;
+	if(server2.initserver(9020)==false)  cout<<"port:9020 cannot connect."<<endl;
+  	CServer server3;
+    if(server3.initserver(9030)==false)  cout<<"port:9030 cannot connect."<<endl;
+   	CServer server4;
+    if(server4.initserver(9040)==false)  cout<<"port:9040 cannot connect."<<endl;
+
+   	thread t1(agent1_func);
+   	t1.detach();
+
+
+	gettimeofday(&start,NULL);
+   	while(!done_all){
+   	   	gettimeofday(&middle1,NULL);
+   		unsigned long  tt_s = (middle1.tv_sec  -  start.tv_sec)*1000000+middle1.tv_usec  -  start.tv_usec;
+   		if(tt_s%10000000==0)cout<<"		Thread0:using time: "<<tt_s/1000000<<" s."<<endl;//每隔10s打印一次，防止死机
+   		cout<<"Thread0:agent1!"<<endl;
+   		while(!need_state1);
+   		SendBuffer[0]=action;
+
+		if(!done2){
+	   		cout<<"Thread0:agent2!"<<endl;
+			server2.Send((char *)send_agent2_buffer,sizeof(send_agent2_buffer));
+	  		cout<<"Thread0:agent2 send!"<<endl;
+			server2.Recv((char *)&recv_agent2_buffer,sizeof(recv_agent2_buffer));//接受动作信息
+			cout<<"Thread0:agent2 recv!"<<endl;
+		}
+
+		if(!done3){
+			cout<<"Thread0:agent3!"<<endl;
+			server3.Send((char *)send_agent3_buffer,sizeof(send_agent3_buffer));
+	  		cout<<"Thread0:agent3 send!"<<endl;
+			server3.Recv((char *)&recv_agent3_buffer,sizeof(recv_agent3_buffer));//接受动作信息
+			cout<<"Thread0:agent3 recv!"<<endl;
+		}
+
+		if(!done4){
+			cout<<"Thread0:agent4!"<<endl;
+
+			server4.Send((char *)send_agent4_buffer,sizeof(send_agent4_buffer));
+	  		cout<<"Thread0:agent4 send!"<<endl;
+			server4.Recv((char *)&recv_agent4_buffer,sizeof(recv_agent4_buffer));//接受动作信息
+			cout<<"Thread0:agent4 recv!"<<endl;
+		}
+
+		SendBuffer[1]=recv_agent2_buffer;
+		SendBuffer[2]=recv_agent3_buffer;
+		SendBuffer[3]=recv_agent4_buffer;
+		client.ClientSend((char *)SendBuffer, sizeof(SendBuffer));
+		cout<<"Thread0:send to PC |--|  action1:"<<action<<" action2:"<<recv_agent2_buffer
+				<<" action3:"<<recv_agent3_buffer
+				<<" action4:"<<recv_agent4_buffer<<endl;
+
+		client.ClientRecv((char *)RevBuffer, sizeof(RevBuffer));//从主机接收信息
+		cout<<"Thread0:recv from PC |---| done1:"<<RevBuffer[AGENT_NUM*L1_NUM]
+				<<"   done2:"<<RevBuffer[AGENT_NUM*L1_NUM+1]
+				<<"   done3:"<<RevBuffer[AGENT_NUM*L1_NUM+2]
+				<<"   done4:"<<RevBuffer[AGENT_NUM*L1_NUM+3]<<endl;
+
+		memcpy(send_agent2_buffer,&RevBuffer[L1_NUM],L1_NUM*sizeof(float));//
+		memcpy(&send_agent2_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+1],1*sizeof(float));//接受state2、done2
+
+		memcpy(send_agent3_buffer,&RevBuffer[2*L1_NUM],L1_NUM*sizeof(float));//
+		memcpy(&send_agent3_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+2],1*sizeof(float));//接受state3、done3
+
+	    memcpy(send_agent4_buffer,&RevBuffer[3*L1_NUM],L1_NUM*sizeof(float));//
+	    memcpy(&send_agent4_buffer[32],&RevBuffer[AGENT_NUM*L1_NUM+3],1*sizeof(float));//接受state3、done3
+		need_state1 = false;
+	    done_all = RevBuffer[AGENT_NUM*L1_NUM+4];
+	    done1 = RevBuffer[AGENT_NUM*L1_NUM]==1? true:false;
+	    done2 = send_agent2_buffer[32]==1? true:false;
+	    done3 = send_agent3_buffer[32]==1? true:false;
+	    done4 = send_agent4_buffer[32]==1? true:false;
+   	}
+   	cout<<"Thread0:ALL agents have accomplished their tasks!"<<endl;
+	// close socket
+	cout<<"Thread0:Client socket to PC will be closed."<<endl;
+	client.ClientClose();
+    return 0;
+}
+*/

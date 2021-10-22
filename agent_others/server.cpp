@@ -28,7 +28,7 @@ bool CServer::initserver(const int port)
   struct sockaddr_in serveaddr;
   memset(&serveaddr,0,sizeof(serveaddr));
   serveaddr.sin_family=AF_INET;   //ipv4协议族
-  serveaddr.sin_addr.s_addr=inet_addr("192.168.1.111");
+  serveaddr.sin_addr.s_addr=inet_addr("192.168.0.111");
   serveaddr.sin_port=htons(port);
   if(bind (m_listenfd,(const struct sockaddr*)&serveaddr,sizeof(serveaddr))!=0){
     perror("bind");close(m_listenfd);return false;}
@@ -51,7 +51,7 @@ void CServer::Recv(char *msg,int len)
 	iErrMsg = recv(m_clientfd,msg, len, 0);
 	if (iErrMsg < 0)
 	{
-		printf("recv msg failed with error: %d\n", iErrMsg);
+		printf("SERVER recv msg failed with error: %d\n", iErrMsg);
 		exit(-1);
 
 	}
@@ -62,7 +62,7 @@ void CServer::Send(char *msg,int len)
 	iErrMsg = send(m_clientfd, msg,len, 0); //发送
 	if (iErrMsg < 0)
 	{
-		printf("send msg failed with error: %d\n", iErrMsg);
+		printf("SERVER send msg failed with error: %d\n", iErrMsg);
 		exit(-1);
 	}
 	 if (strcmp(msg, "exit") == 0) {

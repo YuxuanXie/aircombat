@@ -7,7 +7,7 @@
 int ClientNet::ClientConnect(int port, const char* address)
 {
 	cout<<"Agent connecting the test environment......."<<endl;
-	 socket_fd = socket(AF_INET, SOCK_STREAM,0);
+	socket_fd = socket(AF_INET, SOCK_STREAM,0);
 	if(socket_fd == -1)
 	{
 		cout<<"create socket error"<<endl;
@@ -24,7 +24,7 @@ int ClientNet::ClientConnect(int port, const char* address)
 		exit(-1);
 	}
 
-   cout<<" connect environment server successfully."<<endl;
+   cout<<"agent connect environment server successfully."<<endl;
    cout<<"-------------------------"<<endl;
 
 }
@@ -36,7 +36,7 @@ void ClientNet::ClientSend(char* msg, int len)
 	iErrMsg = send(socket_fd, msg,len, 0); //·¢ËÍ
 	if (iErrMsg < 0)
 	{
-		printf("send msg failed with error: %d\n", iErrMsg);
+		printf("PC send msg failed with error: %d\n", iErrMsg);
 		exit(-1);
 	}
   if (strcmp(msg, "exit") == 0) {
@@ -56,7 +56,7 @@ void ClientNet::ClientRecv(char* msg, int len)
 	iErrMsg = recv(socket_fd,msg, len, 0);
 	if (iErrMsg < 0)
 	{
-		printf("recv msg failed with error: %d\n", iErrMsg);
+		printf("PC recv msg failed with error: %d\n", iErrMsg);
 		exit(-1);
 
 	}

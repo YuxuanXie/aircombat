@@ -85,7 +85,7 @@ int DQN::choose_action_random()
 {
 	int action;
 	float randF = (rand() % 100 + 1) / 100.f;
-	cout << randF << endl;
+	//cout << randF << endl;
 	action = rand() % (action_n);
 	return action;
 }

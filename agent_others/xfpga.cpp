@@ -120,7 +120,7 @@ void FPGA_readDQNInfo() {
     fdata=  axilite_read(XDQN_FPGATOP_CONTROL_ADDR_INFO_LEARNING_RATE_DATA);
     //printf("learning_rate ->%f \r\n",fdata);
     fdata= axilite_read(XDQN_FPGATOP_CONTROL_ADDR_INFO_REWARD_DECAY_DATA);
-    //printf("reward_decay ->%f \r\n",fdata);
+   // printf("reward_decay ->%f \r\n",fdata);
 	 data =axilite_read(XDQN_FPGATOP_CONTROL_ADDR_INFO_ITER_N_DATA);
 	 //printf("iter_n ->%d \r\n",data);
 	 data =axilite_read(XDQN_FPGATOP_CONTROL_ADDR_INFO_BATCH_SIZE_DATA);

@@ -7,7 +7,7 @@
 int ClientNet::ClientConnect(int port, const char* address)
 {
 	cout<<"Agent connecting the test environment......."<<endl;
-	 socket_fd = socket(AF_INET, SOCK_STREAM,0);
+	socket_fd = socket(AF_INET, SOCK_STREAM,0);
 	if(socket_fd == -1)
 	{
 		cout<<"create socket error"<<endl;

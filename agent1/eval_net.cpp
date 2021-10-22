@@ -93,61 +93,53 @@ ADDER_TREE_LOOP4:
 
 void vmpu_A(hls::stream<VECTOR>&strm_out)
 {
-	  unsigned  L1_nf   = 0;
-	  unsigned  L1_sf   = 0;
-	  unsigned  tile = 0;
-	  unsigned const TOTAL_FOLD = NF * SF;
-	  float acc[PE];
+	unsigned  L1_nf   = 0;
+	unsigned  L1_sf   = 0;
+	unsigned  tile = 0;
+	unsigned const TOTAL_FOLD = NF * SF;
+	float acc[PE];
 
-      #pragma HLS ARRAY_PARTITION variable=acc complete dim=0
+#pragma HLS ARRAY_PARTITION variable=acc complete dim=0
 
-	  VECTOR o;
-    // std::cout<<"hwl1_result--------";
-	 VM_L1:for(unsigned fold=0;fold <TOTAL_FOLD;fold++)
-			  {
-				#pragma HLS PIPELINE II=5
-
-	             // #pragma AP dependence variable=acc inter false
-
-				 //  if(L1_sf == 0) {
-		 L1_init: for(unsigned  pe = 0; pe < PE; pe++) {
-				       #pragma HLS UNROLL
-					    float temp  = bias[pe][L1_nf];
-					    acc[pe]=temp;
-				      }
-
-				 // }
-
-
-		     L1_pe: for(unsigned  pe = 0; pe < PE; pe++) {
-	                  #pragma HLS UNROLL
-
-
-				    	acc[pe]=mac(SIMD,acc[pe],buf_v[0],buf_m[pe][fold]);
-
-				    }
+	VECTOR o;
+	// std::cout<<"hwl1_result--------";
+	VM_L1:
+	for(unsigned fold=0;fold <TOTAL_FOLD;fold++)
+	{
+#pragma HLS PIPELINE II=5
+// #pragma AP dependence variable=acc inter false
+		L1_init:
+		for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+			float temp  = bias[pe][L1_nf];
+			acc[pe]=temp;
+		}
+		L1_pe:
+		for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+			acc[pe]=mac(SIMD,acc[pe],buf_v[0],buf_m[pe][fold]);
+		}
 
 		        // L1_sf++;
 				//    if( L1_sf== SF) {
 				      // produce output and clear accumulators
-				       L1_sf = 0;
-			L1_pestore:  for (unsigned  pe = 0; pe < PE; pe++) {
-				       #pragma HLS UNROLL
-				        l1_out[pe][L1_nf]=acc[pe]<0?0:acc[pe];
-
-				      }
-			          for (unsigned  pe = 0; pe < PE; pe++) {
-                        #pragma HLS UNROLL
-						float temp=l1_out[pe][L1_nf];
-						d_l1_out[pe][L1_nf]= temp>0?1:0;
-						//strm_out[pe].write(temp);
-                        //out[pe]=l1_out[pe][L1_nf];
-                        o.array[pe]=temp;
-
-						//outElem[pe] = activation.activate(nf, pe, accu[pe]);
-						//std::cout<<out[pe] <<"  ";
-					 }
-			          strm_out.write(o);
+		L1_sf = 0;
+		L1_pestore:
+		for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+			l1_out[pe][L1_nf]=acc[pe]<0?0:acc[pe];
+		}
+		for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+			float temp=l1_out[pe][L1_nf];
+			d_l1_out[pe][L1_nf]= temp>0?1:0;
+			//strm_out[pe].write(temp);
+			//out[pe]=l1_out[pe][L1_nf];
+			o.array[pe]=temp;
+			//outElem[pe] = activation.activate(nf, pe, accu[pe]);
+			//std::cout<<out[pe] <<"  ";
+		}
+		strm_out.write(o);
 
 			/*L1_peout:  for (unsigned  pe = 0; pe < PE; pe++) {
                        #pragma HLS PIPELINE II=1
@@ -159,40 +151,36 @@ void vmpu_A(hls::stream<VECTOR>&strm_out)
 					    std::cout<<temp <<"  ";
 				      }*/
 
-					   if(++L1_nf == NF) {
-						 L1_nf   = 0;
-						}
-
-			       //  }
-				    //std::cout<<std::endl;
-	       }
-
-	// std::cout<<std::endl;
+		if(++L1_nf == NF) {
+			L1_nf   = 0;
+		}
+	}
 }
 void vmpu_B(hls::stream<VECTOR>&strm_in,float *result,hls::stream<float>&strm_out)
 {
-	  VECTOR i;
-	  unsigned  L2_nf   = 0;
-	  unsigned  L2_sf   = 0;
-	  unsigned  L2_tile = 0;
-	  unsigned const L2_FOLD = L2_NF * L2_SF;
-	  float acc[PE];
-	  float multresult[L2_PE][L2_SIMD];
-	  float addresult[L2_SIMD];
-	  float addresult1[2];
-      float l2_out[L2_SF][L2_SIMD];
-    #pragma HLS ARRAY_PARTITION variable=acc complete dim=0
-    #pragma HLS ARRAY_PARTITION variable=multresult  complete dim=0
-    #pragma HLS ARRAY_PARTITION variable=addresult   complete dim=0
-    #pragma HLS ARRAY_PARTITION variable=addresult1  complete dim=0
+	VECTOR i;
+	unsigned  L2_nf   = 0;
+	unsigned  L2_sf   = 0;
+	unsigned  L2_tile = 0;
+	unsigned const L2_FOLD = L2_NF * L2_SF;
+	float acc[PE];
+	float multresult[L2_PE][L2_SIMD];
+	float addresult[L2_SIMD];
+	float addresult1[2];
+	float l2_out[L2_SF][L2_SIMD];
+#pragma HLS ARRAY_PARTITION variable=acc complete dim=0
+#pragma HLS ARRAY_PARTITION variable=multresult  complete dim=0
+#pragma HLS ARRAY_PARTITION variable=addresult   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=addresult1  complete dim=0
 
-     #pragma HLS ARRAY_PARTITION variable=l2_out complete dim=0
-   //#pragma HLS dependence variable=l2_out inter false
-	 // std::cout<<"L2 hardware compute"<<std::endl;
+#pragma HLS ARRAY_PARTITION variable=l2_out complete dim=0
+//#pragma HLS dependence variable=l2_out inter false
+	// std::cout<<"L2 hardware compute"<<std::endl;
 
-	  VM_L2:for(unsigned fold=0;fold <L2_FOLD;fold++)
-	  {
-		#pragma HLS PIPELINE II=5
+	VM_L2:
+	for(unsigned fold=0;fold <L2_FOLD;fold++)
+	{
+#pragma HLS PIPELINE II=5
 
        // #pragma AP dependence variable=acc inter false
          if(L2_sf==0)
@@ -301,11 +289,11 @@ void vmpu(unsigned batch,float *result,hls::stream<float>&strm_out){
 
 	#pragma HLS STREAM variable=strm_v depth=NF*SF
 
-    #pragma HLS dataflow
+	#pragma HLS dataflow
 
-	 vmpu_A(strm_v);
+	vmpu_A(strm_v);
 
-	 vmpu_B(strm_v,result,strm_out);
+	vmpu_B(strm_v,result,strm_out);
 
 }
 

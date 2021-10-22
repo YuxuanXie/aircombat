@@ -70,45 +70,45 @@ void calcu_error(float*ex_memory,unsigned batch,hls::stream<float>&eval_Q,hls::s
 void MemInit(float *matrix_in,float *bias_in)
 {
 
-	   //row major in memory
-	   load_matrix1:for(int i=0 ;i<PE ;i++)
-			for (int j = 0; j < DEPTH; j++)
-				for(int k = 0;k < SIMD; k++){
-			   #pragma HLS PIPELINE II=1
-
+   //row major in memory
+   load_matrix1:
+   for(int i=0 ;i<PE ;i++)
+		for (int j = 0; j < DEPTH; j++)
+			for(int k = 0;k < SIMD; k++){
+#pragma HLS PIPELINE II=1
 				float weight1 = matrix_in[i*DEPTH*SIMD+j*SIMD+k];
 				buf_m[i][j][k]=weight1;
 				T_w1[i][j][k]=weight1;
-
 			}
 
 	   //col major in memory
-	   load_matrix2:for(int i=0 ;i<L2_PE ;i++)
-			for (int j = 0; j < L2_DEPTH; j++)
-				for(int k = 0;k < L2_SIMD; k++){
-			   #pragma HLS PIPELINE II=1
-
+	load_matrix2:
+	for(int i=0 ;i<L2_PE ;i++)
+		for (int j = 0; j < L2_DEPTH; j++)
+			for(int k = 0;k < L2_SIMD; k++){
+#pragma HLS PIPELINE II=1
 				float weight2 = matrix_in[L1_NUM*L2_NUM+i*L2_DEPTH*L2_SIMD+j*L2_SIMD+k];
-			    buf_m2[i][j][k] = weight2;
+				buf_m2[i][j][k] = weight2;
 				T_w2[i][j][k]=weight2;
 			}
 
-		load_bias1:for(int i=0 ;i<PE ;i++)
-			for (int j = 0; j < NF; j++){
-			   #pragma HLS PIPELINE II=1
-				float bias1 = bias_in[i*NF+j];
-			    bias[i][j]=bias1;
-			    T_bias[i][j]=bias1;
-			}
+	load_bias1:
+	for(int i=0 ;i<PE ;i++)
+		for (int j = 0; j < NF; j++){
+#pragma HLS PIPELINE II=1
+			float bias1 = bias_in[i*NF+j];
+			bias[i][j]=bias1;
+			T_bias[i][j]=bias1;
+		}
 
-		load_bias2:for(unsigned  sf = 0; sf < L2_SF; sf++)
-	       for (unsigned  simd = 0; simd < L2_SIMD; simd++){
-	          #pragma HLS PIPELINE II=1
-
-				float bias2 = bias_in[L2_NUM+sf*L2_SIMD+simd];
-				l2_bias[sf][simd] = bias2;
-			    T_bias2[sf][simd]= bias2;
-		      }
+	load_bias2:
+	for(unsigned  sf = 0; sf < L2_SF; sf++)
+		for (unsigned  simd = 0; simd < L2_SIMD; simd++){
+#pragma HLS PIPELINE II=1
+			float bias2 = bias_in[L2_NUM+sf*L2_SIMD+simd];
+			l2_bias[sf][simd] = bias2;
+			T_bias2[sf][simd]= bias2;
+		}
 }
 
 
@@ -154,17 +154,17 @@ void data_check(bool check,float *result)
 void compute(float*ex_memory,unsigned Batch_size,int iter_n,float *result,float *vector_in,bool mode)
 {
 	static hls::stream<float>Eval_Q("stream_Eval_Q");
-	    #pragma HLS STREAM variable=Eval_Q depth=32
+#pragma HLS STREAM variable=Eval_Q depth=32
 
-		static hls::stream<float>strm_delta3("stream_delta3");
-	    #pragma HLS STREAM variable=strm_delta3 depth=32
+	static hls::stream<float>strm_delta3("stream_delta3");
+#pragma HLS STREAM variable=strm_delta3 depth=32
 
-		static hls::stream<float>Target_Q("stream_Target_Q");
-        #pragma HLS STREAM variable=Target_Q depth=32
+	static hls::stream<float>Target_Q("stream_Target_Q");
+#pragma HLS STREAM variable=Target_Q depth=32
 
    for (unsigned batch = 0; batch < Batch_size; batch++) //#Batch_size=2
    {
-   #pragma HLS loop_tripcount min=1 max=2
+#pragma HLS loop_tripcount min=1 max=2
 
 //#pragma HLS PIPELINE
 
@@ -172,14 +172,15 @@ void compute(float*ex_memory,unsigned Batch_size,int iter_n,float *result,float 
 		//std::cout<<"backfowrd hardware compute"<<std::endl;
 		if(mode==0)
 		{
-          load_vector:for (unsigned i = 0; i < SF; i++)
+			load_vector:
+			for (unsigned i = 0; i < SF; i++)
 				for(unsigned j = 0; j < SIMD;j++){
-			 //  #pragma HLS PIPELINE II=1
+//#pragma HLS PIPELINE II=1
 
 				buf_v[i][j]  = ex_memory[batch*iter_n+i*SIMD+j];
 				T_buf_v[i][j] = ex_memory[batch*iter_n+L1_NUM+i*SIMD+j];
-			}
-           // cout<<"Target_vmpu"<<endl<<endl;
+				}
+			// cout<<"Target_vmpu"<<endl<<endl;
 			Target_vmpu(batch,result,Target_Q);
 			//cout<<"eval_vmpu"<<endl<<endl;
 			vmpu(batch,result,Eval_Q);
@@ -188,14 +189,14 @@ void compute(float*ex_memory,unsigned Batch_size,int iter_n,float *result,float 
 		}
 		else
 		{
-		  load_state:for (unsigned i = 0; i < SF; i++)
+			load_state:
+			for (unsigned i = 0; i < SF; i++)
 				for(unsigned j = 0; j < SIMD;j++){
-			 //  #pragma HLS PIPELINE II=1
-
-				buf_v[i][j]  = vector_in[i*SIMD+j];
-			}
+//#pragma HLS PIPELINE II=1
+					buf_v[i][j]  = vector_in[i*SIMD+j];
+				}
 			vmpu(batch,result,Eval_Q);
-	    	calcu_error(ex_memory,batch,Eval_Q,Target_Q,strm_delta3,result,iter_n,mode);
+			calcu_error(ex_memory,batch,Eval_Q,Target_Q,strm_delta3,result,iter_n,mode);
 		}
    }
 
@@ -273,7 +274,7 @@ void update_W1()
 				   buf_m[pe][depth][simd]=buf_m[pe][depth][simd]-learn_rate*dw1[pe][depth][simd];
 				   if(depth==0&&pe==0&&simd==0){
 		//			 std:;cout<<"hw_update"<<endl;
-				     std::cout<<buf_m[pe][depth][simd]<<"-"<<learn_rate<<"*"<<dw1[pe][depth][simd]<<"  "<<endl;
+				     //std::cout<<buf_m[pe][depth][simd]<<"-"<<learn_rate<<"*"<<dw1[pe][depth][simd]<<"  "<<endl;
 				   }
 
 			   }
