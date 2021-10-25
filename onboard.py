@@ -13,6 +13,9 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
 from datetime import datetime
+import time
+from util import generate_pos
+from menu import Menu
 
 logdir = './tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 infodir = logdir.replace("tblog", "log/info")
@@ -35,6 +38,7 @@ ax1 = plt.axes(projection='3d')
 
 # 创建 socket 对象
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 port = 8088
 
 # 绑定端口号
@@ -170,15 +174,22 @@ for i_episode in range(int(1e8)):
     title = ''
     loss = 0
     ignore = [0 for _ in range(4)]
+    previous_time = time.time()
+    time_used = []
 
     while not done_all:
         #import pdb; pdb.set_trace()
 
-        recvdata = clientsocket.recv(24)
+        recvdata = clientsocket.recv(16)
         recvdata = struct.unpack('4f', recvdata)
         data = np.array(recvdata, dtype=np.int32)
         # data = [0, 0, 1,1,1,1]
+
         print(data)
+        print( '-' * 20 + f' step={steps}  time={time.time()-previous_time}' + '-'*20)
+        time_used.append(time.time()-previous_time)
+        previous_time = time.time()
+
         action   = data[0] if done_1 == 0 else 9
         action_2 = data[1] if done_2 == 0 else 9
         r_action_number_3 = data[2] if done_3 == 0 else 9
@@ -276,6 +287,7 @@ for i_episode in range(int(1e8)):
         clientsocket.send(send)
 
         if done_all:
+            print(mean_time = sum(time_used)/len(time_used))
             total_steps += steps
             print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, 0.0, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
             # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="episode", simple_value=i_episode)]), global_step=total_steps)

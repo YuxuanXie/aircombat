@@ -59,7 +59,8 @@ serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8088
 
 # 绑定端口号
-serversocket.bind(("192.168.1.109", port))
+# serversocket.bind(("192.168.1.109", port))
+serversocket.bind(("192.168.0.5", port))
 # 设置最大连接数，超过后排队
 serversocket.listen(5)
 

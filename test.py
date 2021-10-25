@@ -29,7 +29,7 @@ for i in range(4):
                       replace_target_iter=600, memory_size=int(1e5),
                       e_greedy_decrement=1e-5,
                       batch_size=128)
-        RL[i].load_model(f'./log/model/2021-10-14-13-59-44/85000_agent{i}.ckpt')
+        RL[i].load_model(f'./log/model/2021-10-19-15-51-18/385000_agent{i}.ckpt')
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 

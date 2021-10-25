@@ -22,18 +22,18 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = tf.summary.FileWriter(logdir)
 
 g = [tf.Graph() for _ in range(4)]
-RL = []
+RL = [None] * 4
 for i in range(4):
     with g[i].as_default():
-        RL.append(
-            DeepQNetwork(n_actions=10,
+        RL[i]= DeepQNetwork(n_actions=10,
                         n_features=32,
                         learning_rate=1e-4,
                         e_greedy=0.99,
                         replace_target_iter=200,
                         memory_size=int(1e5),
                         e_greedy_decrement=1e-6,
-                        batch_size=256))
+                        batch_size=256)
+        RL[i].load_model(f'./log/model/2021-10-18-10-16-27/305000_agent{i}.ckpt')
 
 
     # RL.addw_b_test()

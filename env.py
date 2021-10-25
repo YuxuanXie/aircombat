@@ -8,16 +8,17 @@ import copy
 The enviroment for aircombat.
 """
 class Env():
-    def __init__(self, n_agent, n_target, target_for_agents = [0, 1, 2, 3]):
+    def __init__(self, n_agent, n_target, target_for_agents = [0, 1, 2, 3], pos = None, target_Pos = None):
         self.n_agent = n_agent
         self.n_target = n_target
         self.target_for_agents = target_for_agents
         self.random_size = 3
+        self.hight_random_size = 10
 
         # first agent and first target
         # self.r_position_1 = [4+random.randint(-2,2),4+random.randint(-2,2),30+random.randint(0,2)]
-        self.r_position_1 = [-20+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
-        self.b_position_1 = [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
+        self.r_position_1 = [-20+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)] if pos is None else pos[0]
+        self.b_position_1 = [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 10+random.randint(-self.hight_random_size, self.hight_random_size)] if target_Pos is None else target_Pos[0]
         self.v_r_1 = 1
         self.v_b_1 = 0.1
         self.gamma_r_1 = 0
@@ -26,8 +27,8 @@ class Env():
         self.pusin_b_1 = 90+random.randint(-10,10)
 
         # second agent and second target
-        self.r_position_2 = [-25+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
-        self.b_position_2 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
+        self.r_position_2 = [-25+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)] if pos is None else pos[1]
+        self.b_position_2 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 10+random.randint(-self.hight_random_size, self.hight_random_size)] if target_Pos is None else target_Pos[1]
         self.v_r_2 = 1
         self.v_b_2 = 0.1
         self.gamma_r_2 = 0
@@ -36,9 +37,9 @@ class Env():
         self.pusin_b_2 = 90+random.randint(-10,10)
 
         # third agent and third target
-        self.r_position_3 = [-15+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)]
+        self.r_position_3 = [-15+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)] if pos is None else pos[2]
         #self.b_position_3 = [12 + random.randint(-2, 2), 16 + random.randint(-2, 2), 0]
-        self.b_position_3 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 0]
+        self.b_position_3 =  [5+random.randint(-self.random_size, self.random_size), 5+random.randint(-self.random_size, self.random_size), 10+random.randint(-self.hight_random_size, self.hight_random_size)] if target_Pos is None else target_Pos[2]
         self.v_r_3 = 1
         self.v_b_3 = 0.1
         self.gamma_r_3 = 0
@@ -47,8 +48,8 @@ class Env():
         self.pusin_b_3 = 90+random.randint(-10,10)
 
         # forth agent and forth target
-        self.r_position_4 = [-10+random.randint(0,2), 15+random.randint(0,15), 30+random.randint(0,2)]
-        self.b_position_4 =  [5+random.randint(-self.random_size,self.random_size), 5+random.randint(-self.random_size,self.random_size), 0]
+        self.r_position_4 = [-10+random.randint(0,2), 15+random.randint(0,15), 30+random.randint(0,2)] if pos is None else pos[3]
+        self.b_position_4 =  [5+random.randint(-self.random_size,self.random_size), 5+random.randint(-self.random_size,self.random_size), 10+random.randint(-self.hight_random_size, self.hight_random_size)] if target_Pos is None else target_Pos[3]
         self.v_r_4 = 1
         self.v_b_4 = 0.1
         self.gamma_r_4 = 0
