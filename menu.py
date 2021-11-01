@@ -61,8 +61,10 @@ class Menu(QMainWindow):
 
         target_info = targetInfo[sender.text()]
         sample = np.random.randint(0, len(target_info), size=4)
+        self.move = [True] * 4 if "移动" in sender.text() else [False] * 4
         self.threaten = []
         self.value = []
+        
         for each in sample:
             t,v = list(target_info.values())[each]
             self.threaten.append(t)

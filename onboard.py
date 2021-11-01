@@ -18,8 +18,7 @@ app.exec_()
 pos = menu.pos
 target_pos = menu.target_pos
 threaten = menu.threaten
-
-
+move = menu.move
 value = menu.value
 
 send = []
@@ -41,7 +40,6 @@ port = 8088
 serversocket.bind(("192.168.0.5", port))
 # 设置最大连接数，超过后排队
 serversocket.listen(5)
-
 print(sys.byteorder)
 
 
@@ -59,7 +57,7 @@ n_target = np.array(recvdata, dtype=np.int32).tolist()
 print(n_target)
 
 
-env = Env(4, 4, pos=pos, target_Pos=target_pos, target_for_agents=n_target)
+env = Env(4, 4, pos=pos, target_Pos=target_pos, target_for_agents=n_target, move=move)
 r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
 done_all = False
 done_1 = 0

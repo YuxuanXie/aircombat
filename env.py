@@ -8,12 +8,13 @@ import copy
 The enviroment for aircombat.
 """
 class Env():
-    def __init__(self, n_agent, n_target, target_for_agents = [0, 1, 2, 3], pos = None, target_Pos = None):
+    def __init__(self, n_agent, n_target, target_for_agents = [0, 1, 2, 3], pos = None, target_Pos = None, move = [False, False, False, False]):
         self.n_agent = n_agent
         self.n_target = n_target
         self.target_for_agents = target_for_agents
         self.random_size = 3
         self.hight_random_size = 10
+        self.is_move = move
 
 
         # first agent and first target
@@ -83,6 +84,26 @@ class Env():
         self.target_flag_4 = 0
 
     
+
+    def move(self, speed=0.1):
+        for i in range(self.n_target):
+            if self.is_move[i]:
+                # self.pos_before = [0,0,0]
+                # self.pos_after = self.pos_before[0] + random.uniform(-speed, speed)
+                if i == 0:
+                    self.b_position_1[0] = self.b_position_1[0] + random.uniform(-speed, speed)
+                    self.b_position_1[1] = self.b_position_1[1] + random.uniform(-speed, speed)
+                if i == 1:
+                    self.b_position_2[0] = self.b_position_2[0] + random.uniform(-speed, speed)
+                    self.b_position_2[1] = self.b_position_2[1] + random.uniform(-speed, speed)
+                if i == 2:
+                    self.b_position_3[0] = self.b_position_3[0] + random.uniform(-speed, speed)
+                    self.b_position_3[1] = self.b_position_3[1] + random.uniform(-speed, speed)
+                if i == 3:
+                    self.b_position_4[0] = self.b_position_4[0] + random.uniform(-speed, speed)
+                    self.b_position_4[1] = self.b_position_4[1] + random.uniform(-speed, speed)
+
+
 
     def reset(self):
         # universal parameters
@@ -344,6 +365,7 @@ class Env():
 
     def step(self, r_action_number_1, r_action_number_2,r_action_number_3,r_action_number_4):
         self.action(r_action_number_1, r_action_number_2,r_action_number_3,r_action_number_4)
+        self.move()
         r_position_next_1, b_position_next_1, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4 = self.generate_next_position()
         if self.v_r_1 == 0:
             self.v_r_1 = 1
