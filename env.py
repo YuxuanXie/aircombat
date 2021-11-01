@@ -15,6 +15,7 @@ class Env():
         self.random_size = 3
         self.hight_random_size = 10
 
+
         # first agent and first target
         # self.r_position_1 = [4+random.randint(-2,2),4+random.randint(-2,2),30+random.randint(0,2)]
         self.r_position_1 = [-20+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)] if pos is None else pos[0]

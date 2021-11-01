@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QApplication, QWidget
 import sys
+from util import generate_pos
+import numpy as np
 
 """
 Name : Menu
@@ -46,15 +48,32 @@ class Menu(QMainWindow):
         main_frame = QWidget()
         main_frame.setLayout(layout)
         self.setCentralWidget(main_frame)
+        self.pos = None
+        self.target_pos = None
+        self.threaten = None
+        self.value = None
 
     def onButtonClick(self):
         # sender 是发送信号的对象，此处发送信号的对象是button1按钮
         sender = self.sender()
         print(sender.text() + ' 被按下了')
+        self.pos, self.target_pos = generate_pos(4)
 
+        target_info = targetInfo[sender.text()]
+        sample = np.random.randint(0, len(target_info), size=4)
+        self.threaten = []
+        self.value = []
+        for each in sample:
+            t,v = list(target_info.values())[each]
+            self.threaten.append(t)
+            self.value.append(v)
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     menu = Menu()
     menu.show()
-    sys.exit(app.exec_())
+    app.exec_()
+
+
+
