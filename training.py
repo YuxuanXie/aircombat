@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
 from datetime import datetime
+from util import generate_pos
 
 logdir = './tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 infodir = logdir.replace("tblog", "log/info")
@@ -33,7 +34,7 @@ for i in range(4):
                         memory_size=int(1e5),
                         e_greedy_decrement=1e-6,
                         batch_size=256)
-        RL[i].load_model(f'./log/model/2021-10-18-10-16-27/305000_agent{i}.ckpt')
+        RL[i].load_model(f'./log/model/2021-10-19-15-51-18/385000_agent{i}.ckpt')
 
 
     # RL.addw_b_test()
@@ -42,7 +43,8 @@ total_steps = 0
 ax1 = plt.axes(projection='3d')
 
 for i_episode in range(int(1e8)):
-    env = Env(4, 4)
+    pos, target_pos = generate_pos(4)
+    env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0

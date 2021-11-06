@@ -12,6 +12,7 @@ from env import Env
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
+import random
 from datetime import datetime
 from util import generate_pos
 
@@ -31,7 +32,7 @@ for i in range(4):
                       replace_target_iter=600, memory_size=int(1e5),
                       e_greedy_decrement=1e-5,
                       batch_size=128)
-        RL[i].load_model(f'./log/model/2021-10-19-15-51-18/385000_agent{i}.ckpt')
+        RL[i].load_model(f'./log/model/2021-11-04-19-01-00/480000_agent{i}.ckpt')
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 
@@ -40,8 +41,20 @@ winner_count = 0
 
 for i_episode in range(int(1e2)):
     pos, target_pos = generate_pos(4)
-    # env = Env(4, 4, pos=pos, target_Pos=target_pos, move=[True]*4)
-    env = Env(4, 4, pos=pos, target_Pos=target_pos)
+
+    # pos = [[-19, 20, 32], [-24, 19, 32], [-15, 15, 32], [-8, 20, 31]]
+    # target_pos = [[8, 2, 4], [4, 6, 13], [3, 2, 20], [7, 2, 6]]
+    # print(f"target_pos = {target_pos}")
+    # print(f"pos = {pos}")
+    
+    # target_for_agents = [0,1,2,3]
+    # random.shuffle(target_for_agents)
+    # assigned_target_Pos = []
+    # for each in target_for_agents:
+    #     assigned_target_Pos.append(target_pos[each])
+
+    env = Env(4, 4, pos=pos, target_Pos=target_pos, move=[False]*4 )
+    # env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
     done_1 = 0
@@ -158,6 +171,9 @@ for i_episode in range(int(1e2)):
         state_2 = np.array(situation_information_2, dtype=np.float32)
         state_3 = np.array(situation_information_3)
         state_4 = np.array(situation_information_4)
+
+        # import pdb; pdb.set_trace()
+        # print(state)
 
         with g[0].as_default():
             if done_1 == 0:

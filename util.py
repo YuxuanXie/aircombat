@@ -39,7 +39,7 @@ def generate_pos(num_agents):
     target_pos = []
 
     random_size = 3
-    hight_random_size = 10
+    hight_random_size = 0
 
     pos.append([-20+random.randint(0,2), 15+random.randint(0,5), 30+random.randint(0,2)])
     pos.append([-25 + random.randint(0, 2), 15 + random.randint(0, 5), 30 + random.randint(0, 2)])
@@ -47,9 +47,10 @@ def generate_pos(num_agents):
     pos.append([-10 + random.randint(0, 2), 15 + random.randint(0, 15), 30 + random.randint(0, 2)])
 
     for _ in range(num_agents):
-        b_position = [5 + random.randint(-random_size, random_size),
-                         5 + random.randint(-random_size, random_size),
-                         10 + random.randint(-hight_random_size, hight_random_size)]
+        if random.random() < 0.8:
+            b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size), 0 + random.randint(-hight_random_size, hight_random_size)]
+        else:
+            b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size),  30 + random.randint(0, 2)]
 
         target_pos.append(b_position)
 

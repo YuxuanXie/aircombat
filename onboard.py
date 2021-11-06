@@ -10,6 +10,7 @@ from env import Env
 import time
 from menu import Menu, QApplication
 
+
 app = QApplication(sys.argv)
 menu = Menu()
 menu.show()
@@ -20,6 +21,9 @@ target_pos = menu.target_pos
 threaten = menu.threaten
 move = menu.move
 value = menu.value
+
+# print(f"target_pos = {target_pos}")
+# print(f"pos = {pos}")
 
 send = []
 for each in pos:
@@ -57,7 +61,18 @@ n_target = np.array(recvdata, dtype=np.int32).tolist()
 print(n_target)
 
 
-env = Env(4, 4, pos=pos, target_Pos=target_pos, target_for_agents=n_target, move=move)
+# target_pos = [[6, 7, 0], [8, 5, 10], [2, 8, 17], [3, 4, 8]]
+# pos = [[-19, 16, 32], [-23, 20, 30], [-14, 16, 31], [-10, 22, 30]]
+# n_target = [3,2,0,1]
+# n_target = [0,1,2,3]
+
+assigned_target_Pos = []
+for each in n_target:
+    assigned_target_Pos.append(target_pos[each])
+
+env = Env(4, 4, pos=pos, target_Pos=assigned_target_Pos, move=move)
+# env = Env(4, 4, pos=pos, target_Pos=target_pos,  target_for_agents=[1,0,2,3], move=move)
+
 r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
 done_all = False
 done_1 = 0
@@ -87,7 +102,7 @@ loss = 0
 ignore = [0 for _ in range(4)]
 previous_time = time.time()
 time_used = []
-
+if_training = False
 
 
 while not done_all:
@@ -95,7 +110,6 @@ while not done_all:
     recvdata = clientsocket.recv(16)
     recvdata = struct.unpack('4f', recvdata)
     data = np.array(recvdata, dtype=np.int32)
-    # data = [0, 0, 1,1,1,1]
 
     print(data)
     print( '-' * 20 + f' step={steps}  time={time.time()-previous_time}' + '-'*20)
@@ -107,12 +121,13 @@ while not done_all:
     r_action_number_3 = data[2] if done_3 == 0 else 9
     r_action_number_4 = data[3] if done_4 == 0 else 9
 
+
     steps += 1
     # data = [0, 0, 1,1,1,1]
     state = np.array(situation_information, dtype=np.float32)
     state_2 = np.array(situation_information_2, dtype=np.float32)
-    state_3 = np.array(situation_information_3)
-    state_4 = np.array(situation_information_4)
+    state_3 = np.array(situation_information_3, dtype=np.float32)
+    state_4 = np.array(situation_information_4, dtype=np.float32)
 
 
     r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
@@ -130,7 +145,7 @@ while not done_all:
 
     send = situation_information + situation_information_2 + situation_information_3 + situation_information_4 + [done_1, done_2, done_3, done_4, done_all]
     send = np.array(send, dtype=np.float32)
-    print(send)
+    # print(send)
     clientsocket.send(send)
 
     if done_all:
