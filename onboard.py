@@ -22,8 +22,8 @@ threaten = menu.threaten
 move = menu.move
 value = menu.value
 
-# print(f"target_pos = {target_pos}")
-# print(f"pos = {pos}")
+print(f"target_pos = {target_pos}")
+print(f"pos = {pos}")
 
 send = []
 for each in pos:

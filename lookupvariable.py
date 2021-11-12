@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.python import pywrap_tensorflow
 
 for i in range(4):
-    checkpoint_path = f'./log/model/2021-10-19-15-51-18/385000_agent{i}.ckpt'
+    checkpoint_path = f'./log/model/2021-11-04-19-01-00/480000_agent{i}.ckpt'
     reader = pywrap_tensorflow.NewCheckpointReader(checkpoint_path)
     var_to_shape_map = reader.get_variable_to_shape_map()
     param_dict = reader.get_variable_to_shape_map()

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QApplication, QWidget
 import sys
-from util import generate_pos
+from util import generate_pos, generate_pos_per_scene
 import numpy as np
 
 """
@@ -33,6 +33,10 @@ targetInfo["空中目标"] = {
     "scoutPlane": (5, 10),
 }
 
+targetInfo["混合目标"] = {}
+
+for value in targetInfo.values():
+    targetInfo["混合目标"].update(value)
 
 class Menu(QMainWindow):
     def __init__(self, paranet=None):
@@ -57,7 +61,10 @@ class Menu(QMainWindow):
         # sender 是发送信号的对象，此处发送信号的对象是button1按钮
         sender = self.sender()
         print(sender.text() + ' 被按下了')
-        self.pos, self.target_pos = generate_pos(4)
+        mix = True if "混合目标" in sender.text() else False
+        in_air = True if "空中目标" in sender.text() else False
+
+        self.pos, self.target_pos = generate_pos_per_scene(4, in_air=in_air, mix=mix)
 
         target_info = targetInfo[sender.text()]
         sample = np.random.randint(0, len(target_info), size=4)

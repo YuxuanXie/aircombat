@@ -16,6 +16,8 @@ import random
 from datetime import datetime
 from util import generate_pos
 
+os.environ["TF_CPP_MIN_LOG_LEVEL"]='3'
+
 logdir = './tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 infodir = logdir.replace("tblog", "log/info")
 os.mkdir(infodir)
@@ -53,7 +55,7 @@ for i_episode in range(int(1e2)):
     # for each in target_for_agents:
     #     assigned_target_Pos.append(target_pos[each])
 
-    env = Env(4, 4, pos=pos, target_Pos=target_pos, move=[False]*4 )
+    env = Env(4, 4, pos=pos, target_Pos=target_pos, move=[True]*4 )
     # env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
