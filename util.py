@@ -5,6 +5,30 @@ import math
 import numpy as np
 import random
 
+
+
+class CloudpickleWrapper():
+    def __init__(self, x):
+        self.x = x
+    
+    def __getstate__(self):
+        import cloudpickle
+        return cloudpickle.dumps(self.x)
+    
+    def __setstate__(self, ob):
+        import pickle
+        self.x = pickle.loads(ob)
+
+def worker(conn, menu_creator):
+
+    app = QApplication(sys.argv)
+    menu = menu_creator.x(conn=conn)
+    menu.show()
+    app.exec_()
+
+
+
+
 """
 To assign each agent a target based on the threaten value and attack value of the target
 
@@ -47,7 +71,7 @@ def generate_pos(num_agents):
     pos.append([-10 + random.randint(0, 2), 15 + random.randint(0, 15), 30 + random.randint(0, 2)])
 
     for _ in range(num_agents):
-        if random.random() < 0.0:
+        if random.random() < 0.5:
             b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size), 0 + random.randint(-hight_random_size, hight_random_size)]
         else:
             b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size),  30 + random.randint(0, 2)]

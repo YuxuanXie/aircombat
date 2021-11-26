@@ -14,7 +14,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import csv
 import random
 from datetime import datetime
-from util import generate_pos
+from util import generate_pos, assign_target
+from menu import Menu, QApplication, generate_scene
+
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"]='3'
 
@@ -42,7 +44,7 @@ ax1 = plt.axes(projection='3d')
 winner_count = 0
 
 for i_episode in range(int(1e2)):
-    pos, target_pos = generate_pos(4)
+    # pos, target_pos = generate_pos(4)
 
     # pos = [[-19, 20, 32], [-24, 19, 32], [-15, 15, 32], [-8, 20, 31]]
     # target_pos = [[8, 2, 4], [4, 6, 13], [3, 2, 20], [7, 2, 6]]
@@ -55,7 +57,14 @@ for i_episode in range(int(1e2)):
     # for each in target_for_agents:
     #     assigned_target_Pos.append(target_pos[each])
 
-    env = Env(4, 4, pos=pos, target_Pos=target_pos, move=[True]*4 )
+    pos, target_pos, move, threaten, value = generate_scene()
+    target_for_agents = assign_target(pos, target_pos, threaten, value)
+
+    assigned_target_Pos = []
+    for each in target_for_agents:
+        assigned_target_Pos.append(target_pos[each])
+
+    env = Env(4, 4, pos=pos, target_Pos=assigned_target_Pos, move=[True]*4 )
     # env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False

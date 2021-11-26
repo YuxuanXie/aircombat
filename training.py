@@ -34,7 +34,7 @@ for i in range(4):
                         memory_size=int(1e5),
                         e_greedy_decrement=1e-6,
                         batch_size=256)
-        RL[i].load_model(f'./log/model/2021-10-19-15-51-18/385000_agent{i}.ckpt')
+        RL[i].load_model(f'./log/model/2021-11-18-21-24-17/215000_agent{i}.ckpt')
 
 
     # RL.addw_b_test()
