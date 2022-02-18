@@ -3,6 +3,7 @@ import sys
 import time
 from util import generate_pos, generate_pos_per_scene
 import numpy as np
+import random
 
 """
 Name : Menu
@@ -48,7 +49,8 @@ for value in targetInfo.values():
 
 
 def generate_scene():
-    pos, target_pos = generate_pos_per_scene(4, in_air=False, mix=False)
+    in_air = False if random.random() < 0.5 else True
+    pos, target_pos = generate_pos_per_scene(4, in_air=in_air, mix=True)
 
     target_info = targetInfo["混合目标"]
     sample = np.random.randint(0, len(target_info), size=4)
@@ -76,8 +78,13 @@ class Menu(QMainWindow):
         self.taskInstances = [QPushButton(s) for s in self.scensNames]
         self.agent_buttonInstances = [QPushButton(f"飞机{i+1}号") for i in range(4)]
         self.textInstances = [QLineEdit() for i in range(4)]
+        self.attackInstances = [QLineEdit() for i in range(4)]
         self.gestureParseInstances = [QLineEdit() for i in range(4)]
         self.timeInstances = [QLineEdit() for i in range(4)]
+        self.runAwayInstances = [QLineEdit() for i in range(4)]
+        self.weaponInstances = [QLineEdit() for i in range(4)]
+        self.radioInstances = [QLineEdit() for i in range(4)]
+
         self.conn=conn
 
 
@@ -99,18 +106,38 @@ class Menu(QMainWindow):
         row += 1
 
         # Fourth row : assigned target
+        layout.addWidget(QPushButton("攻击优先级"), row, 0)
+        [layout.addWidget(each, row, id+1) for id, each in enumerate(self.attackInstances)] 
+        row += 1
+
+        # Fifth row : assigned target
         layout.addWidget(QPushButton("目标分配结果"), row, 0)
         [layout.addWidget(each, row, id+1) for id, each in enumerate(self.textInstances)] 
         row += 1
 
-        # Fifth row : gestureParse
+        # Sixth row : gestureParse
         layout.addWidget(QPushButton("目标行为理解"), row, 0)
         [layout.addWidget(each, row, id+1) for id, each in enumerate(self.gestureParseInstances)] 
         row += 1
 
-        # sixth row : time
+        # 7th row : time
         layout.addWidget(QPushButton("决策时间"), row, 0)
         [layout.addWidget(each, row, id+1) for id, each in enumerate(self.timeInstances)] 
+        row += 1
+
+        # 8th row : time
+        layout.addWidget(QPushButton("是否规避"), row, 0)
+        [layout.addWidget(each, row, id+1) for id, each in enumerate(self.runAwayInstances)] 
+        row += 1
+
+        # 9th row : time
+        layout.addWidget(QPushButton("武器投放"), row, 0)
+        [layout.addWidget(each, row, id+1) for id, each in enumerate(self.weaponInstances)] 
+        row += 1
+
+        # 10th row : time
+        layout.addWidget(QPushButton("射频管控"), row, 0)
+        [layout.addWidget(each, row, id+1) for id, each in enumerate(self.radioInstances)] 
         row += 1
 
         main_frame = QWidget()
@@ -166,7 +193,7 @@ class Menu(QMainWindow):
 
                 key, data = [ (k,v) for k, v in info.items() ][0]
 
-                data = [str(each) for each in data]
+                data = ['是' if each < 0 else '否' for each in data]
 
                 if key == "目标分配结果":
                     for i in range(len(self.textInstances)):
@@ -180,6 +207,10 @@ class Menu(QMainWindow):
                     for i in range(len(self.timeInstances)):
                         self.timeInstances[i].setPlaceholderText(data[i]) 
 
+                if key == "是否规避设置":
+                    for i in range(len(self.timeInstances)):
+                        self.timeInstances[i].setPlaceholderText(data[i]) 
+                        
                 time.sleep(0.5)
                 QApplication.processEvents()
 

@@ -34,12 +34,11 @@ if __name__ == "__main__":
     print("连接地址: %s" % str(addr))
 
 
-    for _ in range(2000):
+    for iter in range(20000):
         pos, target_pos, move, threaten, value = generate_scene()
 
         print(f"target_pos = {target_pos}")
         print(f"pos = {pos}")
-        print(f"info_menu = {info_from_menu}")
 
 
         send = []
@@ -59,9 +58,6 @@ if __name__ == "__main__":
         recvdata = struct.unpack('4f', recvdata)
         n_target = np.array(recvdata, dtype=np.int32).tolist()
         print(n_target)
-
-        parent.send({"目标分配结果" : n_target})
-
 
         # target_pos = [[6, 7, 0], [8, 5, 10], [2, 8, 17], [3, 4, 8]]
         # pos = [[-19, 16, 32], [-23, 20, 30], [-14, 16, 31], [-10, 22, 30]]
@@ -120,10 +116,9 @@ if __name__ == "__main__":
             data = np.array(recvdata, dtype=np.int32)
 
             print(data)
-            print( '-' * 20 + f' step={steps}  time={time.time()-previous_time}' + '-'*20)
+            print( '-' * 20 + f'episode={iter} step={steps}  time={time.time()-previous_time}' + '-'*20)
             time_used.append(time.time()-previous_time)
             previous_time = time.time()
-            parent.send({"决策时间" : [time_used[-1]]*4})
 
             action   = data[0] if done_1 == 0 else 9
             action_2 = data[1] if done_2 == 0 else 9

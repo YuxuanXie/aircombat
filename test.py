@@ -43,7 +43,7 @@ ax1 = plt.axes(projection='3d')
 
 winner_count = 0
 
-for i_episode in range(int(1e2)):
+for i_episode in range(int(2000)):
     # pos, target_pos = generate_pos(4)
 
     # pos = [[-19, 20, 32], [-24, 19, 32], [-15, 15, 32], [-8, 20, 31]]
@@ -60,11 +60,21 @@ for i_episode in range(int(1e2)):
     pos, target_pos, move, threaten, value = generate_scene()
     target_for_agents = assign_target(pos, target_pos, threaten, value)
 
+    # target_pos = [[8, 8, 0], [8, 3, 0], [2, 6, 0], [2, 5, 0]]
+    # pos = [[-20, 19, 32], [-23, 16, 31], [-14, 18, 31], [-9, 26, 31]]
+
+    
+
+
+    # target_pos = [[4, 7, 0], [3, 3, 0], [6, 6, 0], [5, 7, 0]]
+    # pos = [[-18, 20, 30], [-23, 19, 30], [-15, 16, 31], [-10, 17, 32]]
+
+    # target_for_agents = [0, 1, 3, 2]
     assigned_target_Pos = []
     for each in target_for_agents:
         assigned_target_Pos.append(target_pos[each])
 
-    env = Env(4, 4, pos=pos, target_Pos=assigned_target_Pos, move=[True]*4 )
+    env = Env(4, 4, pos=pos, target_Pos=assigned_target_Pos, move=[False]*4 )
     # env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
     done_all = False
@@ -210,6 +220,8 @@ for i_episode in range(int(1e2)):
             else:
                 r_action_number_4 = 9
                 ignore[3] = 1
+
+        # print(f"{steps} =  {[action, action_2, r_action_number_3, r_action_number_4]}")
 
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(action, action_2, r_action_number_3, r_action_number_4)
 

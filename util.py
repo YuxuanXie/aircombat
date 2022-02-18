@@ -95,7 +95,7 @@ def generate_pos_per_scene(num_agents, in_air, mix=False):
 
     if mix :
         for _ in range(num_agents):
-            if random.random() < 0.5:
+            if random.random() < 0.2:
                 b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size), 0 + random.randint(-hight_random_size, hight_random_size)]
             else:
                 b_position = [5 + random.randint(-random_size, random_size),5 + random.randint(-random_size, random_size),  30 + random.randint(0, 2)]

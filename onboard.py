@@ -74,6 +74,7 @@ if __name__ == "__main__":
     print(n_target)
 
     parent.send({"目标分配结果" : n_target})
+    parent.send({"是否规避设置" : n_target})
 
 
     # target_pos = [[6, 7, 0], [8, 5, 10], [2, 8, 17], [3, 4, 8]]
