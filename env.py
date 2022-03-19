@@ -104,6 +104,32 @@ class Env():
                     self.b_position_4[1] = self.b_position_4[1] + random.uniform(-speed, speed)
 
 
+    def extract_gui_info(self, type=[1,1,1,1]):
+        info = []
+
+        info += self.r_position_1
+        info += [self.v_r_1, self.gamma_r_1, self.pusin_r_1]
+        info += self.r_position_2
+        info += [self.v_r_2, self.gamma_r_2, self.pusin_r_2]        
+        info += self.r_position_3
+        info += [self.v_r_3, self.gamma_r_3, self.pusin_r_3]
+        info += self.r_position_4
+        info += [self.v_r_4, self.gamma_r_4, self.pusin_r_4]
+
+        info += self.b_position_1
+        info += [self.v_b_1, self.gamma_b_1, self.pusin_b_1, type[0]]
+
+        info += self.b_position_2
+        info += [self.v_b_2, self.gamma_b_2, self.pusin_b_2, type[1]]
+
+        info += self.b_position_3
+        info += [self.v_b_3, self.gamma_b_3, self.pusin_b_3, type[2]]
+
+        info += self.b_position_4
+        info += [self.v_b_4, self.gamma_b_4, self.pusin_b_4, type[3]]
+
+        return info
+
 
     def reset(self):
         # universal parameters

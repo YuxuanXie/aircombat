@@ -43,7 +43,7 @@ ax1 = plt.axes(projection='3d')
 
 winner_count = 0
 
-for i_episode in range(int(2000)):
+for i_episode in range(int(1)):
     # pos, target_pos = generate_pos(4)
 
     # pos = [[-19, 20, 32], [-24, 19, 32], [-15, 15, 32], [-8, 20, 31]]
@@ -185,6 +185,9 @@ for i_episode in range(int(2000)):
     ignore = [0 for _ in range(4)]
     if_training = False
 
+    gui_file = open( 'gui_info.csv', 'w',encoding='utf-8',newline='' "")
+    csv_writer = csv.writer(gui_file)
+
     while not done_all:
         steps += 1
         # data = [0, 0, 1,1,1,1]
@@ -192,6 +195,19 @@ for i_episode in range(int(2000)):
         state_2 = np.array(situation_information_2, dtype=np.float32)
         state_3 = np.array(situation_information_3)
         state_4 = np.array(situation_information_4)
+
+        action_illustration = [1,4,3,3]
+        weapon_usage = [2,3,4,5]
+        radiation = [0,0,0,0]
+
+        gui_info = env.extract_gui_info([1,2,3,4])
+        gui_info += target_for_agents
+        gui_info += action_illustration
+        gui_info += weapon_usage + radiation + [done_1, done_2, done_3, done_4, done_all]
+
+        csv_writer.writerow([float(each) for each in gui_info])
+
+        # import pdb; pdb.set_trace()
 
         # import pdb; pdb.set_trace()
         # print(state)
@@ -273,6 +289,14 @@ for i_episode in range(int(2000)):
             total_steps += steps
             print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL[0].epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
             winner_count += 1 if 'winner' in title else 0
+            
+            gui_info = env.extract_gui_info([1,2,3,4])
+            gui_info += target_for_agents
+            gui_info += action_illustration
+            gui_info += weapon_usage + radiation + [done_1, done_2, done_3, done_4, done_all]
+
+            csv_writer.writerow([float(each) for each in gui_info])
+
             if i_episode % 100 ==0 and i_episode!=0:
                 print('**************** check point *****************')
                 print(b_position)
