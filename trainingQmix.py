@@ -8,6 +8,7 @@ from util import generate_pos
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+import torch
 from qmix import QMIX
 from torch.utils.tensorboard import SummaryWriter
 
@@ -19,7 +20,7 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = SummaryWriter(log_dir=logdir)
 
 # QMIX
-alg = QMIX(8, 10, 4)
+alg = QMIX(32, 10, 4)
 
 
 total_steps = 0
@@ -149,32 +150,7 @@ for i_episode in range(int(1e8)):
                 actions[i] = 9
 
 
-        # with g[0].as_default():
-        #     if done_1 == 0:
-        #         action = RL[0].choose_action(state, training=if_training)
-        #     else:
-        #         action = 9
-        #         ignore[0] = 1
-        # with g[1].as_default():
-        #     if done_2 == 0:
-        #         action_2 = RL[1].choose_action(state_2, training=if_training)
-        #     else:
-        #         action_2 = 9
-        #         ignore[1] = 1
-        # with g[2].as_default():
-        #     if done_3 == 0:
-        #         r_action_number_3 = RL[2].choose_action(state_3, training=if_training)
-        #     else:
-        #         r_action_number_3 = 9
-        #         ignore[2] = 1
-        # with g[3].as_default():
-        #     if done_4 == 0:
-        #         r_action_number_4 = RL[3].choose_action(state_4, training=if_training)
-        #     else:
-        #         r_action_number_4 = 9
-        #         ignore[3] = 1
-
-        r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(actions[0], actions[1], actions[3], actions[4])
+        r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(actions[0], actions[1], actions[2], actions[3])
 
         actionlist1.append(actions[0])
         actionlist2.append(actions[1])
@@ -211,21 +187,14 @@ for i_episode in range(int(1e8)):
         Y_B_4.append((b_position_next_4[1]))
         Z_B_4.append(b_position_next_4[2])
 
-        # with g[0].as_default():
-        #     if ignore[0] == 0: RL[0].store_transition(situation_information, action, rewards[0], situation_information_next, done_1)
-        # with g[1].as_default():
-        #     if ignore[1] == 0: RL[1].store_transition(situation_information_2, action_2, rewards[1], situation_information_next_2, done_2)
-        # with g[2].as_default():
-        #     if ignore[2] == 0: RL[2].store_transition(situation_information_3, r_action_number_3, rewards[2], situation_information_next_3, done_3)
-        # with g[3].as_default():
-        #     if ignore[3] == 0: RL[3].store_transition(situation_information_4, r_action_number_4, rewards[3], situation_information_next_4, done_4)
 
-        reward = rewards.sum() / len(rewards)
+        reward = sum(rewards) / len(rewards)
         alg.memory.push([
-            np.array([situation_information, situation_information_2, situation_information_3, situation_information_4]), 
-            np.array(actions),
-            np.array(reward),
-            np.array([situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4])
+            torch.from_numpy(np.array([situation_information, situation_information_2, situation_information_3, situation_information_4], dtype=np.single)), 
+            torch.from_numpy(np.array(actions, dtype=np.int64)),
+            torch.from_numpy(np.array(reward, dtype=np.single)),
+            torch.from_numpy(np.array([situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4], dtype=np.single)),
+            torch.from_numpy(np.array(done_all, dtype=np.single))
         ])
 
         situation_information = situation_information_next
@@ -240,30 +209,28 @@ for i_episode in range(int(1e8)):
 
         if total_steps > 1000:
             # Learn
-            alg.learn()
+            loss = alg.learn()
 
         if done_all:
             total_steps += steps
             if i_episode % 100 == 0 and i_episode!=0:
-                # print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL[0].epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
+                print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
                 # # writer.add_scalar(f"Info/{tag}", value, step)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/episode", simple_value=i_episode)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_1", simple_value=ep_r)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_2", simple_value=ep_r_2)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_3", simple_value=ep_r_3)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/reward_4", simple_value=ep_r_4)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/loss", simple_value=loss)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="train/RL.epsilon", simple_value=RL[0].epsilon)]), global_step=total_steps)
+                writer.add_scalar(f"Info/train_episode", i_episode, total_steps)
+                writer.add_scalar(f"Info/train_reward_1", ep_r, total_steps)
+                writer.add_scalar(f"Info/train_reward_2", ep_r_2, total_steps)
+                writer.add_scalar(f"Info/train_reward_3", ep_r_3, total_steps)
+                writer.add_scalar(f"Info/train_reward_4", ep_r_4, total_steps)
+                writer.add_scalar(f"Info/train_loss", loss, total_steps)
+                writer.add_scalar(f"Info/train_epsilon", alg.mac.epsilon, total_steps)
                 # writer.flush()
-                pass
 
             if i_episode % 5000 ==0 and i_episode!=0:
-                # print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, RL[0].epsilon, steps, (ep_r + ep_r_2 + ep_r_3 + ep_r_4)/4.0, title))
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_1", simple_value=ep_r)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_2", simple_value=ep_r_2)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_3", simple_value=ep_r_3)]), global_step=total_steps)
-                # writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag="test/reward_4", simple_value=ep_r_4)]), global_step=total_steps)
-                # writer.flush()
+                print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
+                writer.add_scalar(f"Info/test_reward_1", ep_r, total_steps)
+                writer.add_scalar(f"Info/test_reward_2", ep_r_2, total_steps)
+                writer.add_scalar(f"Info/test_reward_3", ep_r_3, total_steps)
+                writer.add_scalar(f"Info/test_reward_4", ep_r_4, total_steps)
 
                 # print("model saved")
                 # for i in range(4):
