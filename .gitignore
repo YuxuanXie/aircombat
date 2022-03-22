@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+.vscode
+__pycache__
+info/
+gui_info.csv
+my_net_new/
+log/
+tblog.bak/
+tblog/
