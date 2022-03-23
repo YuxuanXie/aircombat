@@ -145,8 +145,9 @@ for i_episode in range(int(1e8)):
 
         actions = alg.mac.act([state, state_2, state_3, state_4])
         dones = [done_1, done_2, done_3, done_4]
+
         for i in range(4):
-            if dones[i] == 0:
+            if dones[i] == 1:
                 actions[i] = 9
 
 
@@ -207,12 +208,11 @@ for i_episode in range(int(1e8)):
         ep_r_3 += rewards[2]
         ep_r_4 += rewards[3]
 
-
+        for _ in range(4):
+            # Learn
+            loss = alg.learn()
 
         if done_all:
-            for _ in range(10):
-                # Learn
-                loss = alg.learn()
 
             total_steps += steps
             if i_episode % 10 == 0 and i_episode!=0:

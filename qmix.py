@@ -137,7 +137,7 @@ class QMIX:
         self.output_dim = output_dim
         self.agent_num = agent_num
         self.lr = 1e-3
-        self.batch_size = 512
+        self.batch_size = 1024
         self.gamma = 0.9
 
         self.memory = Memory(500000)
@@ -156,7 +156,7 @@ class QMIX:
         self.update_steps = 0
         self.grad_norm_clip = 10
 
-        self.target_udate_frequency = 5000
+        self.target_udate_frequency = 2000
 
     def learn(self):
 
