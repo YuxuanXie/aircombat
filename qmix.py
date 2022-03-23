@@ -72,7 +72,7 @@ class MAController:
         self.agent_num = agent_num
         
         self.epsilon = 1.0
-        self.epsilon_decay = 1e-5
+        self.epsilon_decay = 1e-6
         self.epsilon_min = 0.05
         self.agent_networks = []
 
