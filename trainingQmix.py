@@ -207,13 +207,15 @@ for i_episode in range(int(1e8)):
         ep_r_3 += rewards[2]
         ep_r_4 += rewards[3]
 
-        if total_steps > 1000:
-            # Learn
-            loss = alg.learn()
+
 
         if done_all:
+            for _ in range(10):
+                # Learn
+                loss = alg.learn()
+
             total_steps += steps
-            if i_episode % 100 == 0 and i_episode!=0:
+            if i_episode % 10 == 0 and i_episode!=0:
                 print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
                 # # writer.add_scalar(f"Info/{tag}", value, step)
                 writer.add_scalar(f"Info/train_episode", i_episode, total_steps)

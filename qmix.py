@@ -1,3 +1,4 @@
+import imp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -25,7 +26,7 @@ class Mixer(nn.Module):
         super().__init__()
         self.gs_dim = global_state_dim
         self.agent_num = agent_num
-        self.embed_dim = 128
+        self.embed_dim = 32
 
         self.hyper_w1 = nn.Sequential(
                                     nn.Linear(self.gs_dim, self.embed_dim),
@@ -71,7 +72,7 @@ class MAController:
         self.agent_num = agent_num
         
         self.epsilon = 1.0
-        self.epsilon_decay = 1e-4
+        self.epsilon_decay = 1e-5
         self.epsilon_min = 0.05
         self.agent_networks = []
 
@@ -136,10 +137,10 @@ class QMIX:
         self.output_dim = output_dim
         self.agent_num = agent_num
         self.lr = 1e-3
-        self.batch_size = 256
-        self.gamma = 0.99
+        self.batch_size = 512
+        self.gamma = 0.9
 
-        self.memory = Memory(50000)
+        self.memory = Memory(500000)
 
         self.mac = MAController(self.input_dim, self.output_dim, self.agent_num)
         self.mixer = Mixer(self.agent_num * self.input_dim, self.agent_num)
@@ -153,12 +154,16 @@ class QMIX:
 
         self.optimiser = Adam(params=self.params, lr=self.lr)
         self.update_steps = 0
+        self.grad_norm_clip = 10
 
-        self.target_udate_frequency = 200
+        self.target_udate_frequency = 5000
 
     def learn(self):
 
         sampled_transitions = self.memory.sample(self.batch_size)
+        if not sampled_transitions:
+            return 0.0
+
         states = []
         actions = []
         rewards = []
@@ -174,25 +179,21 @@ class QMIX:
 
         states = Variable(torch.FloatTensor(torch.stack(states, dim=0)))
         actions = torch.stack(actions, dim=0)
-        rewards = Variable(torch.FloatTensor(torch.stack(rewards, dim=0)))
+        rewards = torch.FloatTensor(torch.stack(rewards, dim=0)).view(self.batch_size, 1)
         next_states = Variable(torch.FloatTensor(torch.stack(next_states, dim=0)))
-        dones = Variable(torch.FloatTensor(torch.stack(dones, dim=0)))
+        dones = torch.FloatTensor(torch.stack(dones, dim=0)).view(self.batch_size, 1)
 
-        # states = sampled_transitions[:, 0]
-        # actions = sampled_transitions[:, 1]
-        # reward = sampled_transitions[:, 2]
-        # next_states = sampled_transitions[:, 3]
-        # done = sampled_transitions[:, 4]
 
         mac_out = self.mac.forward(states)
         gs = states.reshape(self.batch_size, 1, self.agent_num*self.input_dim)
         chosen_q_value = torch.gather(mac_out, dim=2, index=torch.unsqueeze(actions, dim=-1))
         q_tot = self.mixer(chosen_q_value, gs)
 
-        mac_out_next = self.mac.forward(next_states)
+        mac_out_next = self.mac.forward(next_states).detach()
         max_action = torch.argmax(mac_out_next, dim=-1)
         mac_out_next_tatget = self.target_mac.forward(next_states)
         mac_out_next_max = torch.gather(mac_out_next_tatget, dim=2, index=torch.unsqueeze(max_action, dim=-1))
+
 
         gs_next = next_states.reshape(self.batch_size, 1, self.agent_num*self.input_dim)
         q_tot_next_target = self.target_mixer(mac_out_next_max, gs_next)
@@ -203,11 +204,13 @@ class QMIX:
 
         self.optimiser.zero_grad()
         loss.backward()
+        grad_norm = torch.nn.utils.clip_grad_norm_(self.params, self.grad_norm_clip)
         self.optimiser.step()
 
         self.update_steps += 1
         if self.update_steps % self.target_udate_frequency == 0:
             # TODO: Need to check if mac includes the list of agents
+            print("Update target network!")
             self.target_mac.load_state_dicts(self.mac.state_dicts())
             self.target_mixer.load_state_dict(self.mixer.state_dict())
         
