@@ -1,6 +1,7 @@
 # 导入 socket、sys 模块
 import os
 import csv
+from matplotlib.style import available
 import numpy as np
 from env import Env
 from datetime import datetime
@@ -190,12 +191,21 @@ for i_episode in range(int(1e8)):
 
 
         reward = sum(rewards) / len(rewards)
+        available_action = []
+        for each in dones:
+            if each:
+                available_action.append([0]*9+[1])
+            else:
+                available_action.append([1]*10)
+        
+
         alg.memory.push([
             torch.from_numpy(np.array([situation_information, situation_information_2, situation_information_3, situation_information_4], dtype=np.single)), 
             torch.from_numpy(np.array(actions, dtype=np.int64)),
             torch.from_numpy(np.array(reward, dtype=np.single)),
             torch.from_numpy(np.array([situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4], dtype=np.single)),
-            torch.from_numpy(np.array(done_all, dtype=np.single))
+            torch.from_numpy(np.array(done_all, dtype=np.single)),
+            torch.from_numpy(np.array(available_action, dtype=np.single)),
         ])
 
         situation_information = situation_information_next

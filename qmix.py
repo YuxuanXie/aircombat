@@ -14,7 +14,7 @@ class Agent(nn.Module):
         self.output_dim = output_dim
         self.embed_dim = 128
         self.agent_network = nn.Sequential(nn.Linear(self.input_dim, self.embed_dim),
-                                nn.ReLU(),
+                                nn.Tanh(),
                                 nn.Linear(self.embed_dim, self.output_dim))
     def forward(self, state):
         state = Variable(torch.FloatTensor(state))
@@ -72,7 +72,7 @@ class MAController:
         self.agent_num = agent_num
         
         self.epsilon = 1.0
-        self.epsilon_decay = 1e-6
+        self.epsilon_decay = 5e-6
         self.epsilon_min = 0.05
         self.agent_networks = []
 
@@ -137,8 +137,8 @@ class QMIX:
         self.output_dim = output_dim
         self.agent_num = agent_num
         self.lr = 5e-4
-        self.batch_size = 1024
-        self.gamma = 0.9
+        self.batch_size = 2048
+        self.gamma = 0.95
 
         self.memory = Memory(500000)
 
@@ -154,9 +154,9 @@ class QMIX:
 
         self.optimiser = Adam(params=self.params, lr=self.lr)
         self.update_steps = 0
-        self.grad_norm_clip = 10
+        self.grad_norm_clip = 20
 
-        self.target_udate_frequency = 2000
+        self.target_udate_frequency = 10000
 
     def learn(self):
 
@@ -169,6 +169,7 @@ class QMIX:
         rewards = []
         next_states = []
         dones = []
+        next_available_action = []
 
         for each in sampled_transitions:
             states.append(each[0])
@@ -176,13 +177,14 @@ class QMIX:
             rewards.append(each[2])
             next_states.append(each[3])
             dones.append(each[4])
+            next_available_action.append(each[5])
 
         states = Variable(torch.FloatTensor(torch.stack(states, dim=0)))
         actions = torch.stack(actions, dim=0)
         rewards = torch.FloatTensor(torch.stack(rewards, dim=0)).view(self.batch_size, 1)
         next_states = Variable(torch.FloatTensor(torch.stack(next_states, dim=0)))
         dones = torch.FloatTensor(torch.stack(dones, dim=0)).view(self.batch_size, 1)
-
+        next_available_action = torch.stack(next_available_action, dim=0)
 
         mac_out = self.mac.forward(states)
         gs = states.reshape(self.batch_size, 1, self.agent_num*self.input_dim)
@@ -190,6 +192,8 @@ class QMIX:
         q_tot = self.mixer(chosen_q_value, gs)
 
         mac_out_next = self.mac.forward(next_states).detach()
+        mac_out_next[next_available_action == 0] = -9e10
+        
         max_action = torch.argmax(mac_out_next, dim=-1)
         mac_out_next_tatget = self.target_mac.forward(next_states)
         mac_out_next_max = torch.gather(mac_out_next_tatget, dim=2, index=torch.unsqueeze(max_action, dim=-1))
