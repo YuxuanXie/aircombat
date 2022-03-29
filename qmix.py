@@ -12,7 +12,7 @@ class Agent(nn.Module):
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.embed_dim = 128
+        self.embed_dim = 256
         self.agent_network = nn.Sequential(nn.Linear(self.input_dim, self.embed_dim),
                                 nn.Tanh(),
                                 nn.Linear(self.embed_dim, self.output_dim))
@@ -76,7 +76,8 @@ class MAController:
         self.epsilon_min = 0.05
         self.agent_networks = []
 
-        for i in range(self.agent_num):
+        # for i in range(self.agent_num): 
+        for i in range(1):
             self.agent_networks.append(Agent(self.input_dim, self.output_dim))
 
     def act(self, obs):
@@ -84,8 +85,8 @@ class MAController:
         if random.random() < self.epsilon:
             return [random.randrange(0, 9) for _ in range(self.agent_num)]
         actions = []
-        for s, net in zip(obs, self.agent_networks):
-            qs = net(s)
+        for s in obs:
+            qs = self.agent_networks[0](s)
             action = torch.argmax(qs, dim=-1).item()
             actions.append(action)
         
@@ -95,13 +96,13 @@ class MAController:
 
         qs = []
         for i in range(self.agent_num):
-            qs.append(self.agent_networks[i](obs[:,i]))
+            qs.append(self.agent_networks[0](obs[:,i]))
         qs = torch.stack(qs, dim=1)
 
         return qs
 
     def load_state_dicts(self, states):
-        for i in range(self.agent_num):
+        for i in range(len(self.agent_networks)):
             self.agent_networks[i].load_state_dict(states[i])
     
     def state_dicts(self):
@@ -136,7 +137,7 @@ class QMIX:
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.agent_num = agent_num
-        self.lr = 5e-5
+        self.lr = 1e-5
         self.batch_size = 2048
         self.gamma = 0.95
 
@@ -156,7 +157,7 @@ class QMIX:
         self.update_steps = 0
         self.grad_norm_clip = 20
 
-        self.target_udate_frequency = 5000
+        self.target_udate_frequency = 1000
 
     def learn(self):
 
