@@ -136,7 +136,7 @@ class QMIX:
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.agent_num = agent_num
-        self.lr = 5e-4
+        self.lr = 5e-5
         self.batch_size = 2048
         self.gamma = 0.95
 
@@ -156,7 +156,7 @@ class QMIX:
         self.update_steps = 0
         self.grad_norm_clip = 20
 
-        self.target_udate_frequency = 10000
+        self.target_udate_frequency = 5000
 
     def learn(self):
 
@@ -193,7 +193,7 @@ class QMIX:
 
         mac_out_next = self.mac.forward(next_states).detach()
         mac_out_next[next_available_action == 0] = -9e10
-        
+
         max_action = torch.argmax(mac_out_next, dim=-1)
         mac_out_next_tatget = self.target_mac.forward(next_states)
         mac_out_next_max = torch.gather(mac_out_next_tatget, dim=2, index=torch.unsqueeze(max_action, dim=-1))

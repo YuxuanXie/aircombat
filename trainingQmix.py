@@ -27,7 +27,7 @@ alg = QMIX(32, 10, 4)
 total_steps = 0
 ax1 = plt.axes(projection='3d')
 
-for i_episode in range(int(1e8)):
+for i_episode in range(int(1e7)):
     pos, target_pos = generate_pos(4)
     env = Env(4, 4, pos=pos, target_Pos=target_pos)
     r_position, b_position, r_position_2, b_position_2, r_position_3, b_position_3, r_position_4, b_position_4, situation_information, situation_information_2, situation_information_3, situation_information_4 = env.reset()
