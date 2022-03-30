@@ -134,8 +134,8 @@ for i_episode in range(int(1e7)):
     steps = 0
     title = ''
     loss = 0
-    if_training = not i_episode % 10000 == 0
-
+    win_rate = []
+    greedy = False if i_episode % 1000 == 0 else True
     while not done_all:
         steps += 1
         # data = [0, 0, 1,1,1,1]
@@ -144,7 +144,7 @@ for i_episode in range(int(1e7)):
         state_3 = np.array(situation_information_3)
         state_4 = np.array(situation_information_4)
 
-        actions = alg.mac.act([state, state_2, state_3, state_4])
+        actions = alg.mac.act([state, state_2, state_3, state_4], epsilon_greedy=greedy)
         dones = [done_1, done_2, done_3, done_4]
 
         for i in range(4):
@@ -225,7 +225,13 @@ for i_episode in range(int(1e7)):
                 # Learn
                 loss = alg.learn()
             total_steps += steps
-            if i_episode % 10 == 0 and i_episode!=0:
+
+            if "winner" in title:
+                win_rate.append(1.0)
+            else:
+                win_rate.append(0.0)
+
+            if i_episode % 50 == 0 and i_episode != 0:
                 print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
                 # # writer.add_scalar(f"Info/{tag}", value, step)
                 writer.add_scalar(f"Info/train_episode", i_episode, total_steps)
@@ -235,14 +241,20 @@ for i_episode in range(int(1e7)):
                 writer.add_scalar(f"Info/train_reward_4", ep_r_4, total_steps)
                 writer.add_scalar(f"Info/train_loss", loss, total_steps)
                 writer.add_scalar(f"Info/train_epsilon", alg.mac.epsilon, total_steps)
+                writer.add_scalar(f"Info/global_reward", reward, total_steps)
+                writer.add_scalar(f"Info/win_rate", sum(win_rate)/len(win_rate), total_steps)
                 # writer.flush()
+                win_rate = []
 
-            if i_episode % 5000 ==0 and i_episode!=0:
+            if i_episode % 1000 == 0:
                 print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
                 writer.add_scalar(f"Info/test_reward_1", ep_r, total_steps)
                 writer.add_scalar(f"Info/test_reward_2", ep_r_2, total_steps)
                 writer.add_scalar(f"Info/test_reward_3", ep_r_3, total_steps)
                 writer.add_scalar(f"Info/test_reward_4", ep_r_4, total_steps)
+                writer.add_scalar(f"Info/global_reward", reward, total_steps)
+                writer.add_scalar(f"Info/win_rate", 1.0 if "winner" in title else 0.0, total_steps)
+
 
                 # print("model saved")
                 # for i in range(4):

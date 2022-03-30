@@ -80,9 +80,9 @@ class MAController:
         for i in range(1):
             self.agent_networks.append(Agent(self.input_dim, self.output_dim))
 
-    def act(self, obs):
+    def act(self, obs, epsilon_greedy=True):
         self.epsilon = max(self.epsilon_min, self.epsilon-self.epsilon_decay)
-        if random.random() < self.epsilon:
+        if epsilon_greedy and random.random() < self.epsilon:
             return [random.randrange(0, 9) for _ in range(self.agent_num)]
         actions = []
         for s in obs:
