@@ -11,6 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import torch
 from qmix import QMIX
+from mcqmix import MCQMIX
 from torch.utils.tensorboard import SummaryWriter
 
 logdir = './tblog/' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
@@ -21,7 +22,7 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = SummaryWriter(log_dir=logdir)
 
 # QMIX
-alg = QMIX(32, 10, 4)
+alg = MCQMIX(32, 10, 4)
 
 
 total_steps = 0
