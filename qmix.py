@@ -140,7 +140,7 @@ class QMIX:
         self.output_dim = output_dim
         self.agent_num = agent_num
         self.lr = 1e-5
-        self.batch_size = 2048
+        self.batch_size = 4096
         self.gamma = 0.95
 
         self.memory = Memory(500000)
