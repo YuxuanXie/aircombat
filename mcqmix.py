@@ -52,19 +52,19 @@ class MultipleMixer(nn.Module):
 
 
 class MCQMIX:
-    def __init__(self, input_dim, output_dim, agent_num):
+    def __init__(self, input_dim, output_dim, agent_num, args):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.agent_num = agent_num
-        self.lr = 1e-5
-        self.batch_size = 2048
-        self.gamma = 0.95
-        self.klcoef = 0.01
+        self.lr = args["lr"]
+        self.batch_size = args["batch_size"]
+        self.gamma = args["gamma"]
+        self.klcoef = args["kl_coef"]
 
-        self.memory = Memory(500000)
+        self.memory = Memory(args["memory_size"])
 
-        self.mac = MAController(self.input_dim, self.output_dim, self.agent_num)
-        self.mixer = MultipleMixer(self.agent_num * self.input_dim, self.agent_num)
+        self.mac = MAController(self.input_dim, self.output_dim, self.agent_num, epsilon_min=args["epsilon_min"])
+        self.mixer = MultipleMixer(self.agent_num * self.input_dim, self.agent_num, num_mixers=args["num_mixers"])
 
         self.target_mac = copy.deepcopy(self.mac)
         self.target_mixer = copy.deepcopy(self.mixer)

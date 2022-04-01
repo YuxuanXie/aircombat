@@ -21,8 +21,19 @@ modeldir = logdir.replace("tblog", "log/model")
 
 writer = SummaryWriter(log_dir=logdir)
 
+args = {
+    "lr" : 1e-5,
+    "batch_size" : 4096,
+    "gamma" : 0.95,
+    "kl_coef": 0.01,
+    "memory_size" : 500000,
+    "epsilon_min" : 0.01,
+    "num_mixers" : 2
+}
+
+
 # QMIX
-alg = MCQMIX(32, 10, 4)
+alg = MCQMIX(32, 10, 4, args)
 
 
 total_steps = 0
@@ -242,8 +253,8 @@ for i_episode in range(int(1e7)):
                 writer.add_scalar(f"Info/train_reward_4", ep_r_4, total_steps)
                 writer.add_scalar(f"Info/train_loss", loss, total_steps)
                 writer.add_scalar(f"Info/train_epsilon", alg.mac.epsilon, total_steps)
-                writer.add_scalar(f"Info/global_reward", reward, total_steps)
-                writer.add_scalar(f"Info/win_rate", sum(win_rate)/len(win_rate), total_steps)
+                writer.add_scalar(f"Info/train_global_reward", reward, total_steps)
+                writer.add_scalar(f"Info/train_win_rate", sum(win_rate)/len(win_rate), total_steps)
                 # writer.flush()
                 win_rate = []
 
@@ -254,7 +265,7 @@ for i_episode in range(int(1e7)):
                 writer.add_scalar(f"Info/test_reward_3", ep_r_3, total_steps)
                 writer.add_scalar(f"Info/test_reward_4", ep_r_4, total_steps)
                 writer.add_scalar(f"Info/global_reward", reward, total_steps)
-                writer.add_scalar(f"Info/win_rate", 1.0 if "winner" in title else 0.0, total_steps)
+                writer.add_scalar(f"Info/test_win_rate", 1.0 if "winner" in title else 0.0, total_steps)
 
 
                 # print("model saved")

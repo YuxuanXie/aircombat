@@ -68,14 +68,14 @@ class Mixer(nn.Module):
 
 
 class MAController:
-    def __init__(self, input_dim, output_dim, agent_num):
+    def __init__(self, input_dim, output_dim, agent_num, epsilon_min=0.01):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.agent_num = agent_num
         
         self.epsilon = 1.0
         self.epsilon_decay = 5e-6
-        self.epsilon_min = 0.05
+        self.epsilon_min = epsilon_min
         self.agent_networks = []
 
         # for i in range(self.agent_num): 
@@ -135,17 +135,17 @@ class Memory:
 
 
 class QMIX:
-    def __init__(self, input_dim, output_dim, agent_num):
+    def __init__(self, input_dim, output_dim, agent_num, args):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.agent_num = agent_num
-        self.lr = 1e-5
-        self.batch_size = 4096
-        self.gamma = 0.95
+        self.lr = args["lr"]
+        self.batch_size = args["batch_size"]
+        self.gamma = args["gamma"]
 
-        self.memory = Memory(500000)
+        self.memory = Memory(args["memory_size"])
 
-        self.mac = MAController(self.input_dim, self.output_dim, self.agent_num)
+        self.mac = MAController(self.input_dim, self.output_dim, self.agent_num, epsilon_min=args["epsilon_min"])
         self.mixer = Mixer(self.agent_num * self.input_dim, self.agent_num)
 
         self.target_mac = copy.deepcopy(self.mac)
