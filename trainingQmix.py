@@ -23,14 +23,15 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = SummaryWriter(log_dir=logdir)
 
 args = {
-    "lr" : 5e-5,
+    "lr" : 1e-4,
     "batch_size" : 4096,
     "gamma" : 0.95,
-    "kl_coef": 0.01,
+    "kl_coef": 0.02,
     "memory_size" : 1000000,
     "epsilon_min" : 0.05,
     "num_mixers" : 2,
-    "cuda" : True,
+    "cuda" : False,
+    "test_inertval" : 1000,
 }
 
 
@@ -40,6 +41,7 @@ alg = MCQMIX(32, 10, 4, args)
 
 total_steps = 0
 ax1 = plt.axes(projection='3d')
+win_rate = []
 
 for i_episode in range(int(1e7)):
     pos, target_pos = generate_pos(4)
@@ -148,8 +150,7 @@ for i_episode in range(int(1e7)):
     steps = 0
     title = ''
     loss = 0
-    win_rate = []
-    greedy = False if i_episode % 1000 == 0 else True
+    greedy = False if i_episode % args["test_inertval"] == 0 else True
     while not done_all:
         steps += 1
         # data = [0, 0, 1,1,1,1]
@@ -163,6 +164,11 @@ for i_episode in range(int(1e7)):
             state_2 = torch.FloatTensor(state_2).cuda()
             state_3 = torch.FloatTensor(state_3).cuda()
             state_4 = torch.FloatTensor(state_4).cuda()
+        else:
+            state = torch.FloatTensor(state)
+            state_2 = torch.FloatTensor(state_2)
+            state_3 = torch.FloatTensor(state_3)
+            state_4 = torch.FloatTensor(state_4)
 
         actions = alg.mac.act([state, state_2, state_3, state_4], epsilon_greedy=greedy)
         dones = [done_1, done_2, done_3, done_4]
@@ -170,7 +176,6 @@ for i_episode in range(int(1e7)):
         for i in range(4):
             if dones[i] == 1:
                 actions[i] = 9
-
 
         r_position_next, b_position_next, r_position_next_2, b_position_next_2, r_position_next_3, b_position_next_3, r_position_next_4, b_position_next_4, situation_information_next, situation_information_next_2, situation_information_next_3, situation_information_next_4, rewards, done_1, done_2, done_3, done_4, done_all, title = env.step(actions[0], actions[1], actions[2], actions[3])
 
@@ -238,12 +243,11 @@ for i_episode in range(int(1e7)):
         ep_r_3 += rewards[2]
         ep_r_4 += rewards[3]
 
-
+        for _ in range(2):
+            # Learn
+            loss = alg.learn()
 
         if done_all:
-            for _ in range(4):
-                # Learn
-                loss = alg.learn()
             total_steps += steps
 
             if "winner" in title:
@@ -263,10 +267,11 @@ for i_episode in range(int(1e7)):
                 writer.add_scalar(f"Info/train_epsilon", alg.mac.epsilon, total_steps)
                 writer.add_scalar(f"Info/train_global_reward", reward, total_steps)
                 writer.add_scalar(f"Info/train_win_rate", sum(win_rate)/len(win_rate), total_steps)
+
                 # writer.flush()
                 win_rate = []
 
-            if i_episode % 1000 == 0:
+            if i_episode % args["test_inertval"] == 0:
                 print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
                 writer.add_scalar(f"Info/test_reward_1", ep_r, total_steps)
                 writer.add_scalar(f"Info/test_reward_2", ep_r_2, total_steps)
