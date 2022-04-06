@@ -22,13 +22,14 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = SummaryWriter(log_dir=logdir)
 
 args = {
-    "lr" : 1e-5,
+    "lr" : 5e-5,
     "batch_size" : 4096,
     "gamma" : 0.95,
     "kl_coef": 0.01,
-    "memory_size" : 500000,
-    "epsilon_min" : 0.01,
-    "num_mixers" : 2
+    "memory_size" : 1000000,
+    "epsilon_min" : 0.05,
+    "num_mixers" : 2,
+    "cuda" : True,
 }
 
 
@@ -264,7 +265,7 @@ for i_episode in range(int(1e7)):
                 writer.add_scalar(f"Info/test_reward_2", ep_r_2, total_steps)
                 writer.add_scalar(f"Info/test_reward_3", ep_r_3, total_steps)
                 writer.add_scalar(f"Info/test_reward_4", ep_r_4, total_steps)
-                writer.add_scalar(f"Info/global_reward", reward, total_steps)
+                writer.add_scalar(f"Info/test_global_reward", reward, total_steps)
                 writer.add_scalar(f"Info/test_win_rate", 1.0 if "winner" in title else 0.0, total_steps)
 
 

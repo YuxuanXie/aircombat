@@ -49,6 +49,10 @@ class MultipleMixer(nn.Module):
     
     def state_dicts(self):
         return [each.state_dict() for each in self.mixers]
+    
+    def use_cuda(self):
+        for mixer in self.mixers:
+            mixer.cuda()
 
 
 class MCQMIX:
@@ -81,6 +85,12 @@ class MCQMIX:
 
         self.target_udate_frequency = 1000
 
+        if args["cuda"]:
+            self.mac.use_cuda()
+            self.mixer.use_cuda()
+            self.target_mac.use_cuda()
+            self.target_mixer.use_cuda()
+    
     def learn(self):
 
         sampled_transitions = self.memory.sample(self.batch_size)

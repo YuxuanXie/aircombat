@@ -110,6 +110,9 @@ class MAController:
     def state_dicts(self):
         return [each.state_dict() for each in self.agent_networks]
 
+    def use_cuda(self):
+        for net in self.agent_networks:
+            net.cuda()
 
 class Memory:
     def __init__(self, size):
