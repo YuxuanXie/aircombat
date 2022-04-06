@@ -64,6 +64,7 @@ class MCQMIX:
         self.batch_size = args["batch_size"]
         self.gamma = args["gamma"]
         self.klcoef = args["kl_coef"]
+        self.args = args
 
         self.memory = Memory(args["memory_size"])
 
@@ -118,6 +119,14 @@ class MCQMIX:
         next_states = Variable(torch.FloatTensor(torch.stack(next_states, dim=0)))
         dones = torch.FloatTensor(torch.stack(dones, dim=0)).view(self.batch_size, 1)
         next_available_action = torch.stack(next_available_action, dim=0)
+
+        if self.args["cuda"]:
+            states = states.cuda()
+            actions = actions.cuda()
+            rewards = rewards.cuda()
+            next_states = next_states.cuda()
+            dones = dones.cuda()
+            next_available_action = next_available_action.cuda()
 
         mac_out = self.mac.forward(states)
         gs = states.reshape(self.batch_size, 1, self.agent_num*self.input_dim)
