@@ -243,12 +243,12 @@ for i_episode in range(int(1e7)):
         ep_r_3 += rewards[2]
         ep_r_4 += rewards[3]
 
-        for _ in range(2):
-            # Learn
-            loss = alg.learn()
 
         if done_all:
             total_steps += steps
+            for _ in range(10):
+                # Learn
+                loss = alg.learn()
 
             if "winner" in title:
                 win_rate.append(1.0)
