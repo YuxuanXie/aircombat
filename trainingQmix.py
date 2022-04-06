@@ -158,6 +158,12 @@ for i_episode in range(int(1e7)):
         state_3 = np.array(situation_information_3)
         state_4 = np.array(situation_information_4)
 
+        if args["cuda"]:
+            state = torch.FloatTensor(state).cuda()
+            state_2 = torch.FloatTensor(state_2).cuda()
+            state_3 = torch.FloatTensor(state_3).cuda()
+            state_4 = torch.FloatTensor(state_4).cuda()
+
         actions = alg.mac.act([state, state_2, state_3, state_4], epsilon_greedy=greedy)
         dones = [done_1, done_2, done_3, done_4]
 

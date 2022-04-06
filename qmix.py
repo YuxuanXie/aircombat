@@ -16,7 +16,6 @@ class Agent(nn.Module):
                                 nn.Tanh(),
                                 nn.Linear(self.embed_dim, self.output_dim))
     def forward(self, state):
-        state = Variable(torch.FloatTensor(state)).cuda()
         qs = self.agent_network(state)
         return qs
 
