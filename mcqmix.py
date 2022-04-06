@@ -51,6 +51,7 @@ class MultipleMixer(nn.Module):
         return [each.state_dict() for each in self.mixers]
     
     def use_cuda(self):
+        self.choiceNet.cuda()
         for mixer in self.mixers:
             mixer.cuda()
 
