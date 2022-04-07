@@ -23,7 +23,7 @@ modeldir = logdir.replace("tblog", "log/model")
 writer = SummaryWriter(log_dir=logdir)
 
 args = {
-    "lr" : 1e-4,
+    "lr" : 5e-5,
     "batch_size" : 4096,
     "gamma" : 0.95,
     "kl_coef": 0.02,
