@@ -55,7 +55,7 @@ def run_one_episode(args, alg, epsilon_greedy=True):
             else:
                 available_action.append([1]*10)
 
-        if epsilon_greedy == False:
+        if epsilon_greedy:
             alg.memory.push([
                 torch.from_numpy(np.array([situation_information, situation_information_2, situation_information_3, situation_information_4], dtype=np.single)), 
                 torch.from_numpy(np.array(actions, dtype=np.int64)),
