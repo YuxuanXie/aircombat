@@ -32,19 +32,19 @@ if __name__ == "__main__":
 
     p.daemon=True
     p.start()
- 
+    i = 0
     while True:
 
         print(parent.recv())
-
-        parent.send({"目标分配结果" : [1,2,3,4]})
-        parent.send({"目标行为理解" : [1,2,3,4]})
+        i+1
+        parent.send({"目标分配结果" : [i,2,3,4]})
+        parent.send({"目标行为理解" : [i,2,3,4]})
         parent.send({"决策时间" : [1,2,3,4]})
 
         time.sleep(1)
 
         parent.send({"目标分配结果" : [1,3,3,4]})
-        parent.send({"目标行为理解" : [1,"需要",3,4]})
+        parent.send({"目标行为理解" : [i+2,2,3,4]})
         parent.send({"决策时间" : [1,3,3,4]})
 
 

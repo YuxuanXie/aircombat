@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+README.md
+__pycache__/
+gui_info.csv
+log/
+my_net_new/
+tblog.bak/
+tblog/
+

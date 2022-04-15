@@ -43,7 +43,7 @@ ax1 = plt.axes(projection='3d')
 
 winner_count = 0
 
-for i_episode in range(int(1)):
+for i_episode in range(int(100)):
     # pos, target_pos = generate_pos(4)
 
     # pos = [[-19, 20, 32], [-24, 19, 32], [-15, 15, 32], [-8, 20, 31]]

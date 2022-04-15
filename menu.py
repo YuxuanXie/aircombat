@@ -193,7 +193,8 @@ class Menu(QMainWindow):
 
                 key, data = [ (k,v) for k, v in info.items() ][0]
 
-                data = ['是' if each < 0 else '否' for each in data]
+                # data = ['是' if each < 0 else '否' for each in data]
+                data = [ str(each) for each in data]
 
                 if key == "目标分配结果":
                     for i in range(len(self.textInstances)):
