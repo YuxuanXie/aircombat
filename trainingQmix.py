@@ -19,13 +19,13 @@ writer = SummaryWriter(log_dir=logdir)
 
 args = {
     "lr" : 5e-5,
-    "batch_size" : 4096,
+    "batch_size" : 4096*8,
     "gamma" : 0.95,
     "kl_coef": 0.02,
-    "memory_size" : 1000000,
+    "memory_size" : 2000000,
     "epsilon_min" : 0.05,
     "num_mixers" : 2,
-    "cuda" : False,
+    "cuda" : True,
     "test_inertval" : 1000,
     "test_nepisode" : 32,
 }
@@ -42,7 +42,7 @@ for i_episode in range(int(1e7)):
     steps, ep_r, title = run_one_episode(args, alg)
     total_steps += steps
 
-    for _ in range(10):
+    for _ in range(2):
         # Learn
         loss = alg.learn()
 
