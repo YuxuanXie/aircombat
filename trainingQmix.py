@@ -71,6 +71,7 @@ def run(_run):
             win_rate.append(0.0)
 
         if i_episode % 50 == 0 and i_episode != 0:
+
             reward = sum(ep_r)/len(ep_r)
             print("episode = {}, total steps = {}, episilin = {}, previous episode steps = {}, reward = {}, title = {}".format(i_episode, total_steps, alg.mac.epsilon, steps, reward, title))
             # # writer.add_scalar(f"Info/{tag}", value, step)
